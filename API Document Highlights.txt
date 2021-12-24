@@ -1,0 +1,21 @@
+
+---CH1. Data Access---
+
+1.RecordObject
+
+	功用：
+	
+	(1)資料存儲 - 為一HashMap類 --> 常用方法 : get (key) / put (K-V pair)
+
+	(2)執行SQL指令 - CRUD -->常用方法 : query / update
+
+2.RecordArray
+
+3.AutoRecordObject
+
+4.DAO(Spring JDBCTemplate)
+
+5.Poolman
+
+6.Conclusion
+
