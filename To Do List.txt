@@ -1,0 +1,12 @@
+
+1. Study about Java Serializable
+
+2. Study Clean Code CH1.~Ch.11
+
+3. Study JSP/Servlet
+
+4. Study JavaScript
+
+5. Study Java SE & EE
+
+6. 
