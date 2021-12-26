@@ -10,3 +10,11 @@
 5. Study Java SE & EE
 
 6. 
+
+
+---Extra Learning---
+
+1.DataBase
+	(1)What is Codd's normal forms? How can it eliminate duplication of data?
+	
+		

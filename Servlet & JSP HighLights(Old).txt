@@ -1,0 +1,296 @@
+---甚麼是Servlet
+
+1.Servlet是JavaEE規範之一，規範就是介面
+
+2.Servlet是JavaWeb三大組件之一。三大組件分別是:Servlet程序、Filter過濾器、Listener監聽器
+
+3.Servlet是運行在服務器上的一個Java小程序，可以透過HTTP接收客戶端發送過來的請求，並回傳數據給客戶(做出回應)
+
+4.Dynamic Web Project-->每個Project都有一個Context Root專案根目錄 以及 Content directory (存放所有檔案的路徑)
+
+5.中文字的部分再傳給瀏覽器的時候，雖然編碼是UTF-8但是瀏覽器解不出來，顯示????
+
+	-->原因：當初送出的時候沒有寫 Content Type(用F12/Web/MyServlet01/回應標頭-檢視來源 其中找不到content type)
+
+			且回應為????。這個情況是因為Tomcat跟容器接收編碼時，預設接收的編碼為ISO-8859-1(西歐語言)
+
+	   解決方案：如何告訴Tomcat與容器編碼不同-->
+			
+			(1)使用 response.setCharacterEncoding("UTF-8");
+
+			(2)使用response.setContentType("text/html;charset=utf-8");設定回應的contenttype的同時也設定回應標頭 MIME TYPE
+
+				完成後於F12中的回應標頭/檢視來源當中即可看到content-type
+
+				基本上只要一個Servlet中要用到中文字最好就要設定一下
+
+
+6.容器可以決定要呼叫哪一個Servlet的原因：
+
+	分析網址：
+
+		http://localhost:8080/Test0830/MyServlet01
+
+		/Test0830/MyServlet01對應到Request URI，其中Test0830為專案根目錄、MyServlet01即可以依據此"標註"進行呼叫
+
+		@WebServlet("/MyServlet01") <--Servlet程式中的這個東西
+
+	
+	所謂標註(annotation)：
+
+		給機器看的註解...
+
+		是一個特殊的介面，介面中基本都是public的抽象方法，其回傳值必須要是基本資料型別+類別(字串為原則)+這些類別的陣列：
+
+		Primivite Datatype(byte/short/int/long/char/float/double/boolean)+String+Primitive的陣列
+
+		不是隨意都可以。
+
+		以Web_Container為例：會去讀取 @WebServlet("/MyServlet01")已此判斷呼叫專案根目錄下的MyServlet01
+
+
+	P.S
+
+	@WebServlet("/MyServlet01")等價寫法： 
+
+	@WebServlet(value="/MyServlet01") //當底下只有一個Annotation且只有一個value時，value可省略
+
+	@WebServlet(urlPatterns="/MyServlet01")  //value = = urlPatterns
+
+
+
+	loadOnStartup=1指令，若沒有此設定，則請求來了才啟動Servlet
+
+	若有此設定且loadOnStartup!=0 則就算沒有請求也會先把東西new起來(並且預先將Servlet類別載入、實體化、初始化)
+
+	數字代表"順序"(不是要建立的Servlet數量，Servlet永遠只有一個)，建立時先建立數字小的，依照1,2,3,4,5....建立下去
+
+
+7.當容器接收指令要呼叫servlet時會建立1個Thread(執行序)，多個請求額外建立多個執行序。
+
+	EX.當Servlet中有一個變數時，不同Thread下的該變數視為不同份，是區域變數的概念
+
+		P.S複習: 一個Servlet同一時間只有一份，不會有多個Servlet，有可能變多的只有Servlet產生的Thread
+
+
+8.protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		response.getWriter().append("Served at: ").append(request.getContextPath());
+	}
+	response.getWriter()得到Printwrite物件，append方法回傳的也是PrintWriter,所以可以串聯
+	然後writer會把資料輸出到Buffer區，當Buffer區滿或是doGet執行完畢就出清Buffer內的東西
+	doGet方法完成後會自動把Buffer內的東西出清隨後自動close
+
+
+9.可在doGet/doPost方法中使用this.getServletContext().getInitParameter("paramName")獲得servlet context 這個應用程式的代表物件當中對應名稱的初始參數
+
+
+10.
+
+
+
+---甚麼是JSP
+
+1.全稱Java serverpages ，Java的服務器頁面
+
+2.主要作用：代替Servlet程式回傳html頁面數據(因為Servlet回傳html頁面數據是一件繁瑣的事情(不斷使用PrintWriter逐行逐段輸出)，開發以及維護成本高)
+
+3.JSP的位階大致雷同於C#的aspx以及php那類
+
+4.JSP類似文字檔，存放位置在專案中的src：.html/.jsp檔案放在webapp檔案底下，此webapp檔案下包含所有網頁元件
+
+5. 正式上線時網頁要把webapp打包(壓縮成war檔)成一個檔案，放到Tomcat下的webapps的資料夾下，
+
+	Tomcat啟動(執行bin下的start.bat)後會自動解包war檔(解包後建立一個相同專案名稱的資料夾)
+
+	EX. C:\_jsp-ide\apache-tomcat-9.0.37-windows-x64\apache-tomcat-9.0.37\webapps
+
+6.WAR檔匯出-->專案右鍵/Export/WAR Files
+
+7.JSP程式只要一個副檔名為.jsp的檔案就可以了，容器呼叫時會找.jsp的檔案，
+
+		容器會在你第一次存取JSP檔案時，將JSP轉譯為.java，
+
+		然後再編譯為.class，之後載入容器進行處理並提供服務。轉譯後的結果會如下：
+
+		public final class Jsp02_01_jsp extends org.apache.jasper.runtime.HttpJspBase 
+
+		其中HttpJspBase繼承自HttpServlet，無疑地，JSP最後也變成Servlet了
+
+8.在Eclipse中建立JSP File
+
+	-->在專案/src/main/webapp資料夾右鍵/new/JSP File
+
+9.JSP中的 <% %>中間是寫JAVA程式的地方，
+
+	EX.<h1>歡迎<% out.print(request.getParameter("username")); %>光臨</h1>
+
+	等價寫法：
+		<h1>歡迎<%= request.getParameter("username") %>光臨</h1> //運算式元素會直接幫忙print出元素
+
+		<h1>歡迎${param.username}光臨</h1>  //這是EL運算式語言
+
+	getParameter會取得參數的名字，因此執行後若在網址列後加上?username="XXX"
+
+	就會輸出 歡迎XXX光臨
+
+	範例：
+
+	原網址：http://localhost:8080/Test0830/MJsp01.jsp		歡迎Null光臨
+
+	更改後：http://localhost:8080/Test0830/MJsp01.jsp?username=Kitty歡迎Kitty光臨
+
+	P.S out是隱含物件
+
+10.JSP中建立DATE物件:
+
+	今天日期<%=String.format("%tY/%<tm/%<td",new Date())%>  //須先<%@ page import="java.util.*" %>
+
+	其中%<後面的<作用是在只有一個new Date()參數的情況下
+
+	直接參考前面%tY使用的參數不用再取一次參數變成"%tY/%tm/%<td",new Date(),new Date()
+
+	如果取好幾次，會造成每次毫秒數不同
+
+
+11.include方法:
+
+	<%@include file="MyJspXX.jsp" %>
+
+	用相對路徑的方式加入MyJspXX.jsp，但不一定要加入jsp檔案，一般的網頁文字檔也可以
+
+12.method的宣告
+
+	不可在<%%>當中宣告方法，因為最後裡面的東西會被搬到jsp_Service方法當中，而JAVA不允許方法當中存在另一個方法(允許的比方說JavaScript)，這樣的稱為local function	
+
+	所以必須使用<%!%> 此稱為宣告元素，在這裏面即可定義實體變數以及實體方法
+
+13.JSP初始參數設置：因為遲早要變Servlet所以也是透過Servlet設置，不過Servlet-class標籤更改為<jsp-file>其內容為檔案路徑
+
+14.
+<!-- html comment 仍會轉譯到Java-->
+<%--JSP comment 不會轉譯到Java --%>
+
+15.JSP中的輸出 沒有printf只有println 要自己用String.format()
+
+
+---JSP JDBC
+
+1.使用JDBC連線資料庫要先檢查WEB-INF/lib底下有沒有掛上sqljdbc.jar
+
+2.註: result之資料型別: javax.servlet.jsp.jstl.sql.Result 介面
+
+3.result.columnNames回傳資料型別是String[]
+
+4.${result.rows}回傳資料型別是SortedMap[]--屬於MAP陣列，有K-V pair
+
+---JSP JNDI
+
+1.JNDI(Java Naming & Directory Interface)
+
+2.TomCat支援的方式
+
+3.EX: <sql:setDataSource dataSource="jdbc/northwind" />	
+
+4.註: JNDI設定位置:  WebContent/META-INF/context.xml
+
+5.
+
+
+-----Web.xml
+
+1.Tomcat啟動後，容器會先讀Web.xml 還有標註，接著載入Object(包含Servlet(有設定loadOnStartUp的那些)還有其他Object)
+
+所以如果WEB.xml標註亂寫會出問題
+
+2.<servlet>標籤要設定<servlet-name>以及<servlet-mapping>
+
+	需要load on startup 會需要<load-on-startup>標籤
+
+	若name沒有設定其值預設為類別名稱如 專案名稱.Servlet名稱
+
+	servlet mapping的部分可以設定多個url-pattern對應到一個servlet-name
+
+	P.S Servlet-Name只要一個唯一的對應即可
+
+3.<context-param>context代表的是專案應用程式根目錄當中的參數
+
+	當不同的Servlet 如 s1, s2都需要用到參數a，值為"Welcome"
+
+	則不需要每個Servlet都設定，可以使用應用程式層級的參數Servlet Context(應用程式的代表物件)
+
+	可以透過get InitParameter()方法取得物件建立的初始參數
+
+4.部分標籤出現的順序會有限制 EX.init-param要在 load-on-startup之前
+
+
+---Web 容器
+
+1.收到請求後建立兩個物件：response & request
+
+2.從路徑找到對應Servlet呼叫其中Service方法
+
+3.Service會呼叫doGet或doPost
+
+4.ServletContext介面定義了Servlet所運行的應用程式環境的一些行為與觀點，
+
+你可以使用ServletContext實作物件(此物件是容器啟動時去建立new的)來取得應用程式所擁有的資源的路徑(對應到API)
+
+或InputStream實例、設定與取得應用程式之屬性與初始參數等。
+
+5.ServletContext建立的Attribute其生命週期受到放的位置的影響，建立於doGet/doPost中只要進行完一次請求與回覆就消滅
+
+	建立在init()中則是關閉Tomcat前容器刪除Appication的各項屬性時才消滅
+
+6.request.getSession()管理cookie：先檢查是否有cookie-->沒有就建立cookie儲存起來
+
+	後續重複登入時可以透過找到舊cookie 去找到cookie 的sid做對應
+
+	Session主要功用：跨請求，只要不關閉瀏覽器都會是同一個Session(P.S JSP中的session預設為true所以都可以抓到)
+
+
+---隱含物件:
+
+1.Servlet Config: config稱為組態，容器接到指令讀取完web.xml/Servlet context後讀取Servlet，
+
+	其中包含，建構子(constructor)/初始參數init(config)
+
+	呼叫init()時會建立config物件，init(){}方法會把config的位置儲存在一個變數當中
+
+	Servlet Config是跟Servlet設定的代表物件，可以透過他getInitParameter-->使用ServeletConfig[.getServletContext()].getInitParameter("ParamName")
+
+	其中.getServletContext()可省略，因為Generic Servlet同時實作了Servlet Config介面還有 Servlet介面，因此就算不寫直接getInitParameter系統還是會做.getServletContext()
+
+	-->this.config=config (把config assign給this.config)P.S實體變數跟區域變數同名的時候必須加this.
+
+	並且override this.init() (注意複寫的是沒有參數的init()，init(config)是容器要用的我們不能覆寫這一個)
+
+	複寫錯誤會造成config傳不進來
+
+
+---JSP標準動作標籤
+
+	1.jsp:include 將指定檔案或Servlet合併進來
+
+	2.jsp:forward 將包含client request的request物件從一個JSP頁面轉發到另一個(瀏覽器顯示時會顯示收到request物件的那個頁面，但路徑還是發送物件的那個頁面的路徑)
+
+	3.jsp:usebean 
+
+
+---EL運算式
+
+	1.也是減少JAVA程式用
+
+	2.是Servlet中的另一種規格
+
+
+---MVC框架(較方便維護)
+
+	1.C-Controller(使用者給資料須做回應的部分)
+
+	2.V-View(視圖.畫面)
+
+	3.M-Model(主要進行跟資料、企業邏輯有關的)
+
+---補充
+
+1. *.html *.css *.js 這些都稱為"靜態檔案(static Files)" 還有圖片那些不可變的都是
