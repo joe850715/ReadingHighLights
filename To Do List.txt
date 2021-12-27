@@ -12,9 +12,19 @@
 6. 
 
 
----Extra Learning---
+---Extra Learning
 
 1.DataBase
 	(1)What is Codd's normal forms? How can it eliminate duplication of data?
 	
 		
+---Progress Planning
+
+1.JSP/Servlet Reading Progress:
+	-2021/12/27	CH1~CH3
+	-2021/12/28	CH3~CH5
+	-2021/12/29	CH6~CH8
+	-2021/12/30	CH8~CH10
+	
+	-2021/01/03	CH11~CH13
+	-2021/01/04	CH13~CH14(END)
