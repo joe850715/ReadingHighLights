@@ -17,6 +17,10 @@
 1.DataBase
 	(1)What is Codd's normal forms? How can it eliminate duplication of data?
 	
+2.Security
+	(1)Injection Attack
+	(2)XSS Attack
+	
 		
 ---Progress Planning
 

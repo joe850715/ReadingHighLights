@@ -1,1 +1,162 @@
-test to save
+---JSP / SERVLET READING HIGHLIGHTS---
+
+CHAPTER01.簡介WEB應用程式
+
+01.URL / URN / URI的區別
+	用來告訴瀏覽器取得文件檔案等資源的路徑
+	(1)URL(Uniform Resource Locator):最早出現的標準
+	(2)URN(Uniform Resource Name):代表某個資源獨一無二的"名稱"，與URL相同用來識別資源用
+	(3)URI(Uniform Resource Identifier):最晚出現，URL與URN成為了URI的子集
+	範例參照書籍page 1-5
+	
+02.何為HTTP
+	HTTP作為一種通訊協定，定義了兩台電腦間的溝通方式，也就是Client與Server端連線、交換資訊的確認步驟
+	有兩個基本的重要特性：
+		(1)基於請求與回應(Request/Response)
+			-沒有請求就不會有回應
+		(2)無狀態協定(Stateless)
+			-Web網站回應完成後，就不會記得瀏覽器的資訊(Request的生命週期僅限執行一次)
+		
+		<P.S>與HTTPS的區別
+			HTTP傳送的資料都是明文(未加密的)，有安全上的疑慮，因此網景公司設計了SSL（Secure Sockets Layer）
+			用以對HTTP傳輸的數據加密，於是誕生HTTPS(=HTTP+SSL)，一個可進行加密傳輸與身分認證的通訊協定
+			
+		HTTPS和HTTP的區別主要如下：
+		1、https協定需要到ca申請證書，一般免費證書較少，因而需要一定費用。
+		2、HTTP是超文本傳輸協定，資訊是明文傳輸，HTTPs則是具有安全性的ssl加密傳輸協定。
+		3、HTTP和HTTPs使用的是完全不同的連接方式，用的埠也不一樣，前者是80，後者是443。
+		4、HTTP的連接是無狀態的;HTTPS協定是由SSL+HTTP協議構建的可進行加密傳輸、身份認證的網路協定，比HTTP協定安全
+
+03.常用的GET/POST請求
+	(1)GET:
+		向Web網站請求取得指定資源，除了發送取得資源的URI、請求參數之外也會一併發送標頭(Header)資訊，
+		請求參數放在路徑的query String中，因此網址列中會出現參數資訊
+	
+	(2)POST:
+		處理大量的資訊發送，同樣也有發送請求參數與Header，
+		不過請求參數的位置在Header之後的訊息本體(Body Message)中，
+		由於訊息本體長度不受限，所以可以處理大量資料的發送
+		同時網址列也不會出現參數資訊，適合傳送較敏感資訊
+		
+	<P.S>雖然請求參數不會出現在網址列，但仍有可能遭到第三方攻擊而被截取，因此HTTPS的加密連線還是必要的
+	<P.P.S>請求標頭(Header)
+		提供WEB網站一些瀏覽器相關的資訊，方便透過這些資訊進行回應處理。例如：
+		User-Agent中得知使用者的瀏覽器種類與版本
+		Accept-Language了解瀏覽器接受那些語系的內容回應
+	
+04.安全方法與等冪方法
+	(1)安全方法(Safe methods):
+		實做應用程式時，避免有使用者非預期中的結果，如GET/HEAD對使用者來說是用來"取得"資訊，
+		因此不該被拿來"修改"資訊，例如轉帳或刪除帳號，也因此GET確實是安全方法，並不能說GET比較不安全
+		所謂安全與否並非指方法對Server是否產生副作用(Side Effect)，而是對使用者來說是否安全
+		
+	(2)等冪方法(Idmpotent methods):
+		單一次請求造成的副作用，與同樣請求進行多次的副作用必須是相同的
+		EX.執行Delete把某筆資料刪除，隨後多次執行delete結果會是該筆資料不存在而非刪除更多筆
+		其中只有POST不符合等冪特性，因為每次送出POST要求指定URI接受Body中的請求參數會有不同
+		也因此每次POST的副作用也會不同
+
+05.REST架構(REpresentational State Transfer)
+	基於HTTP1.0/HTTP1.1平行發展但不限於HTTP的架構，
+	與HTTP雷同，此架構由Client/Server端組成，且兩者間的通訊機制也是無狀態的(Stateless)
+	而RESTful則是代表一種"設計風格"，泛指符合REST架構原則的系統，例如：
+	POST/book 		用來新增一筆資料
+	GET/book/1 		用來取得ID為1的書
+	DELETE/book/1 	用來刪除ID為1的書...
+	
+06.URI百分比編碼(或URI編碼)
+	(1)URI保留字元
+		URI保留字元中，常用的有「:」、「/」、「?」、「&」、「=」、「@」、「%」等字元，
+		於網址列表達時需要將代表該字元的8個位元以16進制表示並接在%之後，例如「:」-->00111010
+		轉換為16進制後為3A	因此使用%3A表示
+	(2)中文字元
+		URI編碼針對的是UTF-8編碼的8位元數值，若請求參數都是ASCII字元時，由於UTF-8在ASCII部分有相容因此沒問題，
+		非ASCII字元例如中文，UTF-8使用3個位元組來表示，如「林」就會轉為E6.9E.97--> %E6%9E%97
+		<P.S>若編碼為MS950的情況下，林-->只有兩個位元組，會變成%AA%4C因此Web網站處理參數時就要指定MS950編碼
+		
+07.前端技術與後端技術
+	粗略來說，交給瀏覽器去執行的技術屬於前端的範疇，而執行於Web網站的屬於後端技術。
+	例如：JSP/Servlet屬於後端技術，執行於Web網站的記憶體空間；JS屬於前端技術，執行於使用者電腦上的記憶體空間(瀏覽器上)
+	兩者的記憶體空間實體位置不同，無法直接互動，需要透過網路經由HTTP進行互動與資料交換達成應用程式功能
+
+08.何謂WEB容器	
+	作為JSP/Servlet唯一認得並可以用來運行JSP/Servlet的HTTP伺服器，他是由Java寫成並運行於JVM之上的程式，
+	不只是用來持有、保存物件的群集(Collection)物件，同時也掌管物件的生命週期與相關服務連結
+	HTTP那些文字性的通訊協定，就是透過容器居中進行剖析與轉換成Java物件。
+	只要JSP/Servlet撰寫時符合WEB容器標準規範，就可以在任何廠商時做的WEB容器上運行，
+	不用管底層真正的HTTP伺服器為何(參考書籍Page 1-19)
+	如同JVM介於Java程式與實體作業系統之間，WEB容器介於實體HTTP Server與Server之間
+	
+09.	
+	瀏覽器<------>實體伺服器<--->HTTP伺服器程式<--->WEB容器<--->Servlet
+	
+	-瀏覽器的請求由HTTP伺服器轉給WEB容器，WEB容器剖析HTTP請求內容並建立各種物件(HttpSession,HttpServletRequest,...)
+	-WEB容器根據URI決定使用哪個Servlet處理請求
+	-Servlet根據HttpServletRequest決定如何處理並透過HttpServletResponse建立回應
+	-WEB容器與HTTP伺服器溝通，HTTP伺服器將回硬物件轉為HTTP回應回傳給瀏覽器
+	-JVM本身是伺服器上的一個可執行程式，WEB容器由這個JVM去啟動，Servlet又是執行在WEB容器之中
+	-當有請求進來時，WEB容器會幫每個請求分配一個Thread
+	-有多個請求時就有多個執行緒而非多次開關JVM
+	
+10.	WEB容器可以使用同一個Servlet處理多個請求，因此需要注意執行緒安全的問題避免資料錯亂
+
+11.Servlet
+	Servlet類別必須繼承HttpServlet，並且如果要輸出HTML的話需要透過Java的輸入輸出功能，
+	如從HttpServletResponse取得的PrintWriter。
+	不過Servlet主要用於定義Java程式邏輯，應避免用來輸出網頁內容，
+	如需輸出網頁內容應該要選擇使用JSP
+	
+--------------------------------------------------------------------------------------------
+
+CHAPTER02.撰寫與設定Servlet
+
+01.關於HttpServlet
+	要編譯Hello.java，類別路徑(ClassPath)中必須包含ServletAPI的相關類別
+	若使用的是Tomcat，這些相關類別會封裝在Tomcat/lib中的servlet-api.jar當中。
+	編譯出的.class檔則會出現在專案/build/classes資料夾中
+	
+02.Servlet介面的繼承與實作(簡易描述)
+	Servlet介面中定義了Servlet的基本行為：init(),destroy(),service()等等
+	包含管理生命週期與提供服務時需要呼叫的方法。
+	Servlet定義相關的類別與介面都未於javax.servlet套件中
+	與HTTP相關的類別或介面都位於javax.servlet.http套件中
+	
+	其中，HttpServlet類別繼承實作了Servlet介面的GenericServlet類別，並定義了GenericServlet中的抽象方法service()
+	當接收到請求時，容器會呼叫service()方法，用來判斷HTTP請求的方式後再分別呼叫doGet,doPost
+	<P.S>不要覆寫到service()方法，這會把HttpServlet中定義的HTTP預設處理流程給覆蓋
+
+03.	@WebServlet標註
+	使用@WebServlet Annotation可以讓容器自動讀取當中的資訊，
+	除了URI路徑之外，也可提供更多資訊如:name(Servlet的名稱),loadOnStartUp的次序
+	<P.S>
+		當沒有設定Servlet name 的時候其預設值會是Servlet類別的完整名稱
+		應用程式啟動後預設不會建立任何Servlet實體，除非有loadOnStartUp設定(預設值-1,必須設定一個>0的值，越小越優先)
+		
+04.部屬描述檔(Deployment Descriptor,DD)
+	即是專案中的web.xml檔案，可用於定義Servlet的相關資訊，
+	在Servlet3.0之前尚未有Annotation可以使用時都部屬描述檔定義Servlet資訊
+	
+05.環境根目錄(Context Root)
+	<display-name>標籤中定義了"Web APP的名稱"，這僅是一個名稱並非等同於WebAPP的根目錄
+	Servlet4.0以前並沒有規範如何定義WebAPP環境根目錄，因此各廠商有各自定義方式
+	例如：Tomcat可以在META-INF/context.xml中設定環境根目錄，正常情況下預設應用程式資料夾作為環境根目錄
+	使用Eclipse的話也可在專案右鍵/Properties/WebProjectSettings裡面去設定環境根目錄
+	Servlet4.0開始可以在web.xml中使用<default-context-path>來建議預設環境路徑
+	
+06.<welcome-file-list>	
+	作為請求的路徑沒有指定的檔案時，會察看路徑中是否有此清單中的檔案，有的話就做為預設頁面回應
+
+07.web.xml vs Annotation優先次序	
+	在Servlet name相同的情況下，web.xml中的Servlet設定會覆蓋@WebServlet標註設定
+	覆蓋後使用的路徑以web.xml為主，同時如果@WebServlet中的url-pattern被呼叫的話會回傳404-NotFound
+	
+08.	無論是使用web.xml或是@WebServlet，請求的URI都只是一個邏輯名稱(Logical Name)，
+	請求/hello不代表真的有一個檔案叫hello，而是由Web容器去對應處理請求的程式實體名稱(Phisycal Name)與檔案
+	
+09.	Web容器部屬應用程式必要結構
+	(1)WEB-INF:必定位於應用程式根資料夾下，其中內容無法透過HTTP直接請求獲得，需透過Servlet進行Forward轉發
+	(2)web.xml:部屬描述檔必須位於WEB-INF
+	(3)lib:放置jar，位於WEB-INF中
+	(4)classes:放置編譯後的.java檔，放在WEB-INF中，編譯後的.class檔案需要有與套件名稱相符的資料夾結構
+
+10.	
