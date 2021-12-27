@@ -150,13 +150,50 @@ CHAPTER02.撰寫與設定Servlet
 	在Servlet name相同的情況下，web.xml中的Servlet設定會覆蓋@WebServlet標註設定
 	覆蓋後使用的路徑以web.xml為主，同時如果@WebServlet中的url-pattern被呼叫的話會回傳404-NotFound
 	
-08.	無論是使用web.xml或是@WebServlet，請求的URI都只是一個邏輯名稱(Logical Name)，
+08.無論是使用web.xml或是@WebServlet，請求的URI都只是一個邏輯名稱(Logical Name)，
 	請求/hello不代表真的有一個檔案叫hello，而是由Web容器去對應處理請求的程式實體名稱(Phisycal Name)與檔案
 	
-09.	Web容器部屬應用程式必要結構
+09.Web容器部屬應用程式必要結構
 	(1)WEB-INF:必定位於應用程式根資料夾下，其中內容無法透過HTTP直接請求獲得，需透過Servlet進行Forward轉發
 	(2)web.xml:部屬描述檔必須位於WEB-INF
 	(3)lib:放置jar，位於WEB-INF中
 	(4)classes:放置編譯後的.java檔，放在WEB-INF中，編譯後的.class檔案需要有與套件名稱相符的資料夾結構
 
-10.	
+10.進階部屬設定-URI模式設定
+	使用HttpServletRequest的getRequestURI()取得URI資訊：
+	requestURI=contextPath + servletPath + pathInfo
+	
+	(1)環境路徑(ContextPath)
+		可以使用HttpServletRequest的getContextPath()方法取得，此路徑決定了WEB容器應該要挑選哪一個WebApp
+		(因為一個WEB容器上可能部屬多個webapps)
+		當app環境路徑與WEB網站環境根路徑相同時，getContextPath()會回傳空字串
+	
+	(2)Servlet對應
+		決定了使用哪個webapps之後會進行Servlet對應，這邊必須設定URI模式：
+		-路徑對應(Path mapping): 
+			"/"開頭"/*"結尾的URI模式
+			EX. /guest/... 以guest開頭的都會交由該Servlet處理
+		-延伸對應(Extension mapping):
+			"*.開頭的URI模式"
+			EX.設定為*.view的模式，則所有.view結尾的請求交由該Servlet處理
+		-環境根目錄對應(Context root)
+			空字串""是特殊的URI模式對應至環境根資料夾，同等於"/"的請求
+			EX.環境根資料夾為app，則就是http://host:port/app/ 的請求
+			此時pathInfo是"/"，servletPath與contextPath都是空字串
+		-預設Servlet
+			只包括"/"的URI模式，找不到適合的URI模式對應時，就會使用預設Servlet
+			P.S有些Web框架如Spring MVC，會由一個Servlet來統一分配請求該Servlet的URI模式就會設為"/"
+		-嚴格匹配(Exact match)
+			路徑要進行嚴格對應，不符合者都不通過
+			EX.設定路徑為/app/a.book則必須要完全一致
+		
+		若以上URI模式在設定時有重疊的部分，比對時會從最嚴格的開始符合
+
+	(3)Servlet路徑
+		直接對應至URI模式資訊，且並不包含路徑資訊(PathInfo)以及請求參數(Request Parameter)
+		可用HttpServletRequest中的getServletPath()方法取得，但在"/*"與""URI模式的情形下會回傳空字串
+		
+	(4)路徑資訊(PathInfo)
+		指的是不包含環境路徑與Servlet路徑的額外路徑資訊，且不包括請求參數。
+		若沒有額外路徑資訊則回傳null
+		
