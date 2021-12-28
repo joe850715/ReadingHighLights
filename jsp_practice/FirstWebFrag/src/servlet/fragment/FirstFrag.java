@@ -1,7 +1,8 @@
-package servlet.practice;
+package servlet.fragment;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Optional;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -10,17 +11,21 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @WebServlet(
-		name = "Hello",
-		urlPatterns= {"/hello"},
+		name = "Fragment",
+		urlPatterns= {"/frag"},
 		loadOnStartup=1
 		)
-public class Hello extends HttpServlet {
+public class FirstFrag extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html;charset=UTF-8");
 		
-		String username = request.getParameter("username");
+		String username =Optional.ofNullable( request.getParameter("username"))
+						.map(value -> value.replaceAll("<","&lt;"))
+						.map(value -> value.replaceAll(">","&gt;"))
+						.orElse("Guest");
+		
 		String requestURI = request.getRequestURI();
 		String contextPath = request.getContextPath();
 		String servletPath = request.getServletPath();
@@ -33,7 +38,7 @@ public class Hello extends HttpServlet {
 		out.print("<title>Hello Servlet</title>");
 		out.print("</head>");
 		out.print("<body>");
-		out.printf("<h1>Hello!! %s%n!!</h1>",username);
+		out.printf("<h1>Hello!! %s%n, This is the first fragment!!</h1>",username);
 		out.printf("<h1>requestURI= %s%n</h1>",requestURI);
 		out.printf("<h1>contextPath= %s%n</h1>",contextPath);
 		out.printf("<h1>servletPath= %s%n</h1>",servletPath);

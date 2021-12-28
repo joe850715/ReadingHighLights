@@ -197,3 +197,88 @@ CHAPTER02.撰寫與設定Servlet
 		指的是不包含環境路徑與Servlet路徑的額外路徑資訊，且不包括請求參數。
 		若沒有額外路徑資訊則回傳null
 		
+11.靜態資源
+		Webapp相依的JAR檔案中，可以放置Servlet JSP 自定義類別 工具類別 部屬描述檔等等，
+		當請求的URI對應到的位置找不到其請求的資源時，會搜尋並使用JAR中的META-INF/resources/路徑下的對應檔案
+		如果JAR中有使用標註的Servlet，WEB容器也可以讀取標注資訊、載入類別並註冊為Servlet進行服務
+
+--------------------------------------------------------------------------------------------
+CHAPTER03.請求與回應
+
+01.HTTP請求訊息轉變為Java物件
+	HTTP伺服器收到請求後會將支轉交給WEB容器，容器會建立一個代表當次請求的HttpServletRequest實例，
+	並且將請求資訊剖析之後設定給此物件，同時建立一個HttpServletResponse物件作為回應瀏覽器的物件。
+	其中資訊收集、請求&回應的訊息轉換、物件的建立與回收(生命週期)都有WEB容器負責進行
+
+02.處理請求參數
+	常用方法：
+		(1)getParameter("name"):回傳指定名稱參數的值						:String
+		(2)getParameterValues():表單若有複選元件如checkbox或List			:String[]
+		(3)getParameterNames():請求全部的請求參數名稱						:Enumeration<String>
+		(4)getParameterMap():以MAP型態傳回請求參數KEY:參數名稱 VALUE:參數值	:Map<String,String[]>
+	
+03.過濾請求參數
+	現代瀏覽器可以直接在網址列輸入請求參數，瀏覽器會自動進行URI編碼，
+	因此未經過濾的請求參數可以被用來進行注入攻擊(Injection)
+	
+04.處理請求標頭
+	(1)getHeader(name):回傳指定標頭的值				:String
+	(2)getHeaders():回傳指定標頭們名稱				:Enumeration<String>
+	(3)getHeaderNames():回傳所有標頭名稱			:Enumeration<String>
+
+	Enumeration轉為ArrayList:
+		使用集合物件Collections(java.util)
+		Collections
+		.list(Enumeration<String>放這邊)
+		.forEach(name -> {	//使用forEach遍歷
+			System.out.printf("%s , %s", name , request.getHeader(name));
+		})
+	
+		<P.S>標頭值本身是整數或日期的話可以用getIntHeader()/getDateHeader()取得轉換後的Date或Int,
+			轉換失敗的話會拋出Exception
+	
+05.請求參數編碼處理
+	(1)POST Request:
+		若瀏覽器沒有在Header中設置Content-Type，使用HttpServletRequest.getCharacterEncoding()會得到null
+		這樣的情況下若容器的預設編碼和瀏覽器的不同就有機會得到亂碼
+		可以使用setCharacterEncoding("編碼類型")方法指定取得POST請求時的編碼，
+		不過限定是設置requestBody當中的編碼(所以只適用POST)，且必須在取得請求值之前進行。
+		建議將此步驟設計在Filter當中，避免反覆於Servlet中設定
+		或是整個應用程式都統一的話可以設定在web.xml中設置
+		<request-character-encoding>UTF-8</request-character-encoding>
+		
+	(2)Get Request:
+		處理URI的是HTTP伺服器而非WEB容器，若要轉UTF-8可用以下方式處理編碼:
+		String name = request.getParameter("name");
+		String name = new String(name.getBytes("ISO-8859-1"),"UTF-8")
+	
+		<P.S>Tomcat8以後，附帶的HTTP Server預設使用UTF-8，便不需要自行轉換編碼了
+		
+06.Form表單的Enctype屬性
+	當未設置Form表單的Enctype屬性時，預設為"application/x-www-form-urlencoded"
+	需要上傳檔案時需要設置為enctype="multipart/form-data"
+	
+07.讀取請求本體的資料
+	使用HttpServletRequest下的getReader()方法可以取得一個BufferedReader去讀取請求本體資料
+	
+08.取得上傳的檔案(參考書籍Page.3-23)
+	(1)使用getInputStream()取得ServletInputStream(InputStream的子類別)，代表請求本體的串流物件
+	<P.S>
+		同一請求期間getReader()與getInputStream()只能擇一呼叫，
+		兩者都呼叫會拋出IllegalStateException
+		
+	(2)使用getPart()處理上傳的檔案
+		Servlet3.0之後可以使用getPart()來處理上傳的檔案，
+		注意必須設置@MultipartConfig標註才能使用getPart()相關API
+
+09.@MultipartConfig標註可以對Servlet處理上傳檔案的相關資訊做設置，可用屬性有:
+	(1)fileSizeThreshold:整數值設定，檔案大小超過門檻會先寫入暫存檔，預設值為0
+	(2)location:字串設定，設定寫入檔案的資料夾，可搭配Part的Write()使用，預設為空字串
+	(3)maxFileSize:檔案上傳大小限制，預設值-1L，表示不限制大小
+	(4)maxRequestSize:限制multipart/form-data請求個數，預設值-1L，表示不限制大小
+
+10.取得上傳檔案名稱
+	multipart/form-data發送的每個內容區段都有以下的標頭資訊:
+	(1)
+	(2)
+	(3

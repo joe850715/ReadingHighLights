@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>FirstServlet</name>
+	<name>FirstWebFrag</name>
 	<comment></comment>
 	<projects>
-		<project>FirstWebFrag</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
