@@ -283,4 +283,38 @@ CHAPTER03.請求與回應
 	(1)name
 	(2)filename
 	(3)Content-Type
-	要取得上傳檔案名稱
+	要取得上傳檔案名稱就是取得Content-Disposition標頭的值，然後取得filename屬性的值
+	最後再用Java I/O API寫入檔案中
+
+11.調派請求
+	webapp中常需要多個Servlet完成請求，比如把另一個Servlet的請求處理流程Include進來，
+	或是將請求轉發(Forward)給特定的Servlet處理，這些需求可以透過RequestDispatcher完成。
+	
+	RequestDispatcher:
+	使用HttpServletRequest的getRequestDispatcher()方法取得"RequestDispatcher介面的實作物件"，
+	(RequestDispatcher介面下包含include()與forward())
+	也可以透過ServletContext的getRequestDispatcher()或getNamedDispatcher()取得
+	EX.取得dispatcher
+		RequestDispatcher dispatcher =
+			request.getRequestDispatcher("some");
+			dispatcher.include(request,response); -->include()方法
+			
+	(1)Include方法:
+		將另一個Servlet流程包括進目前的Servlet流程中，
+		如上request.getRequestDispatcher("some");之中的some實際會是依照URI模式取得對應的Servlet，
+		也可以包含query String例如: req.getRequestDispatcher("some?data=123456")，
+		如此在被include或forward的Servlet中就可以使用getParameter("data")獲得參數。
+		<P.S>
+			呼叫include()時必須分別傳入實作了ServletRequest,ServletResponse介面的物件，
+			可以是service()傳入的物件，也可以是自定義的物件或Wrapper
+	(2)forward方法:
+		
+12.請求範圍屬性(Request Scope Attribute)
+	使用include()或forward()時包括請求參數的作法只適用於傳遞字串值給另一個Servlet，
+	在調派過程中如果有需要共用的"物件"，可以設定給請求物件成為屬性，稱為"請求範圍 屬性"
+	相關方法如下:
+		(1)setAttribute("name",Object):指定名稱&物件設定屬性
+		(2)getAttribute("name"):透過指定名稱取得屬性
+		(3)getAttributeNames():取得所有屬性的名稱
+		(4)removeAttribute("name"):透過指定名稱移除屬性
+		
