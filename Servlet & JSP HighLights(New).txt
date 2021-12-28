@@ -278,7 +278,9 @@ CHAPTER03.請求與回應
 	(4)maxRequestSize:限制multipart/form-data請求個數，預設值-1L，表示不限制大小
 
 10.取得上傳檔案名稱
-	multipart/form-data發送的每個內容區段都有以下的標頭資訊:
-	(1)
-	(2)
-	(3
+	multipart/form-data發送的每個內容區段都有Content-Disposition:form-data的標頭資訊:
+	包含屬性:
+	(1)name
+	(2)filename
+	(3)Content-Type
+	要取得上傳檔案名稱
