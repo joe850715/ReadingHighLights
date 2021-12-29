@@ -170,24 +170,29 @@ CHAPTER02.撰寫與設定Servlet
 	
 	(2)Servlet對應
 		決定了使用哪個webapps之後會進行Servlet對應，這邊必須設定URI模式：
+		
 		-路徑對應(Path mapping): 
 			"/"開頭"/*"結尾的URI模式
 			EX. /guest/... 以guest開頭的都會交由該Servlet處理
+		
 		-延伸對應(Extension mapping):
 			"*.開頭的URI模式"
 			EX.設定為*.view的模式，則所有.view結尾的請求交由該Servlet處理
+		
 		-環境根目錄對應(Context root)
 			空字串""是特殊的URI模式對應至環境根資料夾，同等於"/"的請求
 			EX.環境根資料夾為app，則就是http://host:port/app/ 的請求
 			此時pathInfo是"/"，servletPath與contextPath都是空字串
+		
 		-預設Servlet
 			只包括"/"的URI模式，找不到適合的URI模式對應時，就會使用預設Servlet
 			P.S有些Web框架如Spring MVC，會由一個Servlet來統一分配請求該Servlet的URI模式就會設為"/"
+		
 		-嚴格匹配(Exact match)
 			路徑要進行嚴格對應，不符合者都不通過
 			EX.設定路徑為/app/a.book則必須要完全一致
 		
-		若以上URI模式在設定時有重疊的部分，比對時會從最嚴格的開始符合
+		若以上URI模式在設定時有重疊的部分，比對時會從最嚴格的開始符合。
 
 	(3)Servlet路徑
 		直接對應至URI模式資訊，且並不包含路徑資訊(PathInfo)以及請求參數(Request Parameter)
@@ -212,10 +217,10 @@ CHAPTER03.請求與回應
 
 02.處理請求參數
 	常用方法：
-		(1)getParameter("name"):回傳指定名稱參數的值						:String
-		(2)getParameterValues():表單若有複選元件如checkbox或List			:String[]
-		(3)getParameterNames():請求全部的請求參數名稱						:Enumeration<String>
-		(4)getParameterMap():以MAP型態傳回請求參數KEY:參數名稱 VALUE:參數值	:Map<String,String[]>
+		(1)getParameter("name"):回傳指定名稱參數的值							:String
+		(2)getParameterValues():表單若有複選元件如checkbox或List				:String[]
+		(3)getParameterNames():	請求全部的請求參數名稱							:Enumeration<String>
+		(4)getParameterMap():	以MAP型態傳回請求參數KEY:參數名稱 VALUE:參數值	:Map<String,String[]>
 	
 03.過濾請求參數
 	現代瀏覽器可以直接在網址列輸入請求參數，瀏覽器會自動進行URI編碼，
@@ -239,8 +244,8 @@ CHAPTER03.請求與回應
 	
 05.請求參數編碼處理
 	(1)POST Request:
-		若瀏覽器沒有在Header中設置Content-Type，使用HttpServletRequest.getCharacterEncoding()會得到null
-		這樣的情況下若容器的預設編碼和瀏覽器的不同就有機會得到亂碼
+		若瀏覽器沒有在Header中設置Content-Type，使用HttpServletRequest.getCharacterEncoding()會得到null，
+		這樣的情況下若容器的預設編碼和瀏覽器的不同就有機會得到亂碼，
 		可以使用setCharacterEncoding("編碼類型")方法指定取得POST請求時的編碼，
 		不過限定是設置requestBody當中的編碼(所以只適用POST)，且必須在取得請求值之前進行。
 		建議將此步驟設計在Filter當中，避免反覆於Servlet中設定
@@ -293,8 +298,8 @@ CHAPTER03.請求與回應
 	RequestDispatcher:
 	使用HttpServletRequest的getRequestDispatcher()方法取得"RequestDispatcher介面的實作物件"，
 	(RequestDispatcher介面下包含include()與forward())
-	也可以透過ServletContext的getRequestDispatcher()或getNamedDispatcher()取得
-	EX.取得dispatcher
+	也可以透過ServletContext的getRequestDispatcher()或getNamedDispatcher()來取得
+	EX.取得dispatcher範例:
 		RequestDispatcher dispatcher =
 			request.getRequestDispatcher("some");
 			dispatcher.include(request,response); -->include()方法
@@ -307,14 +312,181 @@ CHAPTER03.請求與回應
 		<P.S>
 			呼叫include()時必須分別傳入實作了ServletRequest,ServletResponse介面的物件，
 			可以是service()傳入的物件，也可以是自定義的物件或Wrapper
+		<P.P.S>
+			使用include()時被包括的Servlet中任何對請求標頭的設定都會被忽略，
+			被包括的Servlet可以使用getSession()取得HttpSession物件，
+			HttpSession底層預設使用Cookie，因此response會加上Cookie請求標頭		
 	(2)forward方法:
+		呼叫forward()時同樣需要傳入request,response作為參數，
+		要注意呼叫forward()時，目前的Servlet不能有任何的回應確認(Commit)，有Commit時會拋出IllegalStateException
+		且若呼叫forward時在目前的Servlet透過回應物件設定了一些回應但未確認，
+		這些回應在呼叫forward()後會被全部忽略->因此需要設置成response scope attribute去傳遞
+		
+	<P.S>
+		include()與forward()作為調派的方式，是屬於容器內部的流程，
+		瀏覽器並不會知道調派流程，因此網址列並不會發生變化。		
 		
 12.請求範圍屬性(Request Scope Attribute)
 	使用include()或forward()時包括請求參數的作法只適用於傳遞字串值給另一個Servlet，
 	在調派過程中如果有需要共用的"物件"，可以設定給請求物件成為屬性，稱為"請求範圍 屬性"
 	相關方法如下:
-		(1)setAttribute("name",Object):指定名稱&物件設定屬性
-		(2)getAttribute("name"):透過指定名稱取得屬性
-		(3)getAttributeNames():取得所有屬性的名稱
-		(4)removeAttribute("name"):透過指定名稱移除屬性
+		(1)setAttribute("name",Object):	指定名稱&物件設定屬性
+		(2)getAttribute("name"):		透過指定名稱取得屬性
+		(3)getAttributeNames():			取得所有屬性的名稱
+		(4)removeAttribute("name"):		透過指定名稱移除屬性
 		
+13.設定回應標頭、緩衝區
+	(1)設定回應標頭:
+		HttpServletResponse物件的setHead()與addHeader()可以設定標頭
+		-setHeader():設定標頭名稱與值
+		-addHeader():在同一個標頭名稱上附加值
+			這兩個方法接受String值，若標頭為Int或Date可用setIntHeader/setDateHeader，addHeader同理。
+			
+		搭配狀態碼：
+			有些標頭需要搭配HTTP狀態碼(Status Code)，可以透過HttpServletResponse的setStatus()方法設定，例如：
+				
+				狀態碼					範例
+				200	OK					response.setStatus(HttpServletResponse.SC_OK);
+				301	Moved Permanently	response.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
+			
+			注意：
+				必須在response commit之前設定好標頭，若在commit之後設置會被容器忽略
+	
+	(2)對回應進行緩衝：
+		容器"可以"(非必要)對回應進行緩衝，HttpServletResponse以下有幾個關於緩衝的方法：
+			(1)isCommited():查看回應是否已確認
+			(2)reset():重置回應資訊，會一併清除已設定的標頭
+			(3)resetBuffer():只重置回應內容但不會清除標頭
+			(4)flushBuffer():出清緩衝區中已經設定的回應內容
+			(5)getBufferSize():取得緩衝區大小
+			(6)SetBufferSize():需要在response.getWriter()或.getOutputStream之前呼叫，取得的輸出物件才會套用此設定
+			
+			-在緩衝區(Buffer Area)未滿或被出清之前，回應相關內容都不會真正傳到瀏覽器。
+			-reset()/resetBuffer()需要在回應commit之前呼叫，否則拋出IllegalStateException
+			-HttpServletResponse物件被容器關閉前會出清所有內容
+
+14.HttpServletResponse物件被關閉的時機:
+	(1)Servlet的service()方法結束
+	(2)回應內容超過HttpServletResponse中setContentLength()設定的長度
+	(3)呼叫sendRedirect()
+	(4)呼叫sendError()
+	(5)呼叫AsyncContext的complete()方法
+
+15.設置輸出編碼方法：
+	(1)設定Locale:
+		瀏覽器若有發送Accept-Language標頭，可用HttpServletRequest的getLocale()獲得Locale物件，代表瀏覽器可接受語系
+		setLocale()擇可以設定Locale物件資訊，包含語系與編碼資訊。語系會通過回應標頭Content-Language設定。
+		setLocale()也會設定HTTP response的 Content-Language
+		EX.
+			response.setLocale(Locale.TAIWAN); --> HTTP回應的Content-Language變成zh-TW
+		
+	(2)使用setCharacterEncoding()/setContentType()
+		若回應與接收請求參數都需要使用到中文，
+		必須同時設定HttpServletResponse與Request的setCharacterEncoding()或setContentType()為正確編碼
+		
+		setContentType()會在回應中設定content-type回應標頭，只要指定MIME TYPE就可以了，
+		也可以在web.xml中設定<mime-mapping>，包含<extension>中的附檔名對應到<mime-type>的指定MIME類型
+		
+		MIME目的：
+			告訴瀏覽器他接下來將要接收到的輸出內容(串流)是何種類型的檔案，又該如何處理
+			
+16.暫時性重新導向
+	除了第13點提到的設定HTTP Status Code與設定Location標頭之外，也可用HttpServletResponse的sendRedirect()達成
+	要求瀏覽器重新請求一個另一個URI，指定相對URI或絕對URI都可以，例如:
+	response.sendRedirect("https://openhome.cc");
+	此方法會在回應中設定HTTP Status = 302 以及Location標頭，並使用GET方法請求指定URI->網址列會發生變化
+
+--------------------------------------------------------------------------------------------
+CHAPTER04.會話管理
+
+01.何謂會話管理(Session Management)
+	HTTP作為無狀態的通訊協定，伺服器不會記得此次請求以及下個請求之間的關係，
+	若有些功能需要多次請求來完成，webapp就需要一個方法去記得本次請求與之後的請求間的關係。
+	既然webapp不記得那就由瀏覽器在每次請求時主動告知
+	
+02.會話管理常用方式：
+	(1)隱藏欄位(Hidden Field):
+		以問卷作答來看，把上一頁的作答發給webapp並將之以隱藏欄位方式回應給browser,
+		此方式在關閉網頁後就會遺失先前的資訊，且檢視頁面原始碼時可以看到隱藏的值
+	
+	(2)Cookie:
+		在本次請求中把下一次請求時webapp應該知道的資訊先回應給瀏覽器，瀏覽器在後續請求一併發送給應用程式，
+		webapp就可以得知多次請求的相關資料。
+		原理:
+			是瀏覽器儲存訊息的方式，webapp可以回應瀏覽器"set-cookie"標頭，
+			瀏覽器收到後將此標頭與數值儲存為電腦上的檔案，這個檔案就稱為Cookie，
+			可以設定一個存活期限給Cookie，關閉瀏覽器再重啟時若Cookie仍然存活，
+			瀏覽器會用cookie標頭自動將cookie發給webapp，webapp就可以得到請求的相關訊息
+		<P.S>Cookie儲存空間有限
+		
+		Servlet內建的部分Cookie相關API:
+			(1)Cookie cookie = new Cookie("name","value"); - 指定名稱與數值
+			(2)cookie.setMaxAge(7*24*60*60); -設定存活期限，單位是秒
+			(3)response.addCookie(cookie);	-新增Cookie
+			(4)request.getCookies();	-可以取得該網頁所屬網域的所有Cookie,回傳Cookie[]
+			(5)cookie.getName()		-取得cookie名稱
+			(6)cookie.getValue()	-取得cookie數值
+		只憑Cookie簡單的憑據(Token)做驗證是危險的，因此需要一種更為安全的Token
+
+		Cookie的安全性:
+			(1)setSecure():
+				透過把setSecure()設置為true，確保Cookie只能在連線有加密的情況下(HTTPS)傳送
+			(2)setHttpOnly():
+				會在Set-Cookie標頭上附加HttpOnly屬性，標示Cookie只能用在Http，
+				在瀏覽器可支援的前提下，就無法使用javascript讀取Cookie了
+				另外可以用isHttpOnly()方法得知目前是否有有設置為HttpOnly(回傳Boolean)
+	
+	(3)URI重寫(URI Rewriting):
+		GET請求參數的應用，將相關資訊以超連結方式回應給瀏覽器，超連結中的URI把請求參數包進去，
+		按下超連結時，就會一併發送請求參數。
+		限制:
+			URI重寫在超連結附加資訊，因此只適用於GET，且GET可攜帶的參數長度有限，
+			因此要保留大量資訊的話不適用URI重寫的方式
+
+03.HttpSession會話管理方式:
+	使用HttpServletRequest的getSession()取得HttpSession物件，
+	這個物件同樣有setAttribute()跟getAttribute()可以用來將資訊儲存為屬性，
+	可以從Java應用程式觀點來做會話管理，暫時忽略HTTP其實是無狀態的事實
+	
+	(1)getSession():
+		有兩個版本，無參數版本在尚未存在HttpSession物件時呼叫，會直接建立一個新物件回傳；
+		另一個是有boolean參數版本getSession(boolean b)，傳入false時若尚未存在實例會直接回傳null。
+	<P.S>	
+		-若要讓HttpSession物件失效可以使用invalidate()方法 -->可用於登出時
+		-基於WEB安全考量，登入成功後可使用changeSessionId()變更SessionID
+		-呼叫過invalidate()讓HttpSession物件失效之後，後續進行request.getSession()得到的就是全新的HttpSession物件了
+		-HttpSession並非執行緒安全(Thread safe)，multi-thread環境中需要注意設定屬性時共用存取的問題
+		
+	(2)WEB容器
+		HTTP仍然為無狀態協定，數個請求間的關係實際上是由WEB容器負責
+	(3)SessionID
+		為每個HttpSession物件的特殊ID，預設用Cookie存放在瀏覽器，預設名稱為JSESSIONID，數值可用getID()取得
+
+04.HttpSession管理原理
+	(1)
+		WEB容器是執行於JVM的Java程式，getSession()取得的HttpSession是WEB容器中的Java物件，
+		HttpSession中的各項屬性自然也存在於WEB容器中。
+		瀏覽器發出請求時會把Cookie中存放的SessionID發給應用程式，
+		WEB容器根據SessionID找到對應的HttpSession物件，以此獲得會話資料
+	(2)
+		使用HttpSession管理時，屬性是儲存在WEB容器中，SessionID預設使用Cookie存放於瀏覽器，
+		此Cookie存活期限預設為關閉瀏覽器後即失效。(Cookie若失效就無法發送SessionID)
+		HttpSession會占用記憶體空間，不要儲存耗資源的大型物件，
+		無需使用時記得invalidate()使其失效，否則要等到失效期間過後才被回收
+	(3)
+		可使用setMaxInactiveInterval()設定HttpSession的失效期間(多久沒接到請求就失效的期間)，單位為秒
+		也可用web.xml <session-config>中的<session-timeout>設定，注意這邊單位是分鐘
+	
+05.SessionCookieConfig介面
+	(1)SessionCookieConfig實作物件
+		Sevlet3.0後，可以使用ServletContext物件(由Servlet實例呼叫getServletContext()獲得)
+		呼叫getSessionCookieConfig()取得實作物件，此物件可以設定存SessionID用的Cookie其相關資訊，例如:
+		-setName():設置預設為JSESSIONID的Cookie名稱
+		-setAge():設置儲存SessionID的Cookie存活期限(預設為關閉瀏覽器就消滅，單位是秒)
+		重點：
+			SessionCookieConfig設定必須在ServletContext初始化之前
+		修改方式：
+			(1)web.xml:見書籍4-21
+			(2)實作ServletContextListener:
+				容器在初始化ServletContext時會呼叫ServletContextListener的ContextInitialize()
+				
