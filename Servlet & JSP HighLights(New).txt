@@ -489,4 +489,8 @@ CHAPTER04.會話管理
 			(1)web.xml:見書籍4-21
 			(2)實作ServletContextListener:
 				容器在初始化ServletContext時會呼叫ServletContextListener的ContextInitialize()
+				可以在其中取得ServletContext進行SessionCookieConfig設定，
+				Servlet4.0以後也可以通過ServletContext.setSessionTimeout()進行設定
 				
+06.				
+					
