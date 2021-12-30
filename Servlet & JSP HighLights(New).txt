@@ -492,5 +492,260 @@ CHAPTER04.會話管理
 				可以在其中取得ServletContext進行SessionCookieConfig設定，
 				Servlet4.0以後也可以通過ServletContext.setSessionTimeout()進行設定
 				
-06.				
-					
+06.生成SessionID
+	若瀏覽器禁用Cookie，無法使用Cookie在瀏覽器儲存SessionID，此時如打算使用HttpSession進行會話管理，
+	可使用encodeURL()方法進行URI重寫。
+	encodeURL()在容器無法從Cookie中取得SessionID時會在指定的URI附上SessionID以便設定URI重寫時的超連結資訊
+	encodeRedirectURL()可以在指定的重新導向URI附上SessionID訊息
+	
+--------------------------------------------------------------------------------------------
+CHAPTER05.SERVLET API、過濾器與傾聽器
+
+01.進階API
+	WEB容器會生成ServletConfig實例，可以從這個物件獲得Servlet初始參數
+	以及代表整個webapp的ServletContext物件。
+
+02.Servlet實例建立流程
+	WEB容器啟動後讀取Servlet設定資訊，將Servlet類別載入並實體化並為每個Servlet產生ServletConfig實例
+	呼叫Servlet介面的init()，把ServletConfig當作引數傳入(注意這是在Servlet建立實例後才發生，建立實例時還沒有ServletConfig)
+	這個過程在Servlet建立後只會發生一次，所以第一次都特別耗時，後續每個請求到來就呼叫Servlet實例的Service()進行服務
+
+03.ServletConfig
+	ServletConfig實例是每個Servlet的代表物件，容器為每個Servlet設定時都產生了一個Servlet與ServletConfig實例
+	GenericServlet類別同時實作了ServletConfig介面,Servlet介面
+
+04.GenericServlet類別
+	(1)主要目的
+		將初始Servlet呼叫init()時傳入的ServletConfig引數封裝起來
+		在GenericServlet實作Servlet的init()的同時，也呼叫了另一個無參數的init()，
+		轉寫Servlet時如果有一些需要在初始階段執行的動作就可以重新定義這個無參數的init()方法
+	(2)實作方法
+		GenericServlet也簡單實作了Servlet介面與ServletConfig介面定義的方法，
+		可以透過ServletConfig來取得資訊，例如:
+		-getServletConfig()			:ServletConfig
+		-getInitParameter()			:String
+		-getInitParameterNames()	:Enumeration
+		-getServletContext()		:ServletContext
+		同時HttpServlet類別繼承了GenericServlet類別，
+		因此當我們撰寫Servlet extends HttpServlet的時候也可以使用上述方法取得必要資訊而不用意識到ServletConfig存在
+
+05.初始參數(InitParameter)設定
+	(1)使用標註設定
+		getInitParameter(),getInitParameterNames()可以取得Servlet初始參數
+		若要進行設定可以在@WebServlet使用@WebInitParam設定initParams屬性, EX:
+		
+		@WebServlet(name="test",urlPatterns="/test"
+			initParams={
+				@WebInitParam(name="P1",value="value1"),
+				@WebInitParam(name="P2",value="value2")
+			}
+		)
+		public class ServletConfigTest extends HttpServlet{
+			private String param1;
+			public void init() throws ServletException{
+				PARAM1 = getServletConfig().getInitParameter("P1"); -->也可以直接getInitParameter("P1")
+	
+	(2)web.xml設定
+		使用<init-param>等標籤設定，web.xml會覆蓋掉標註的設定(Servlet Name相同的情況下)，結構如下:
+		<servlet>
+			<servlet-name></servlet-name>
+			<servlet-class></servlet-class>
+			<init-param>
+				<param-name></param-name>
+				<param-value></param-value>
+			</init-param>
+			<init-param>
+				<param-name></param-name>
+				<param-value></param-value>
+			</init-param>	
+		</servlet>	
+
+06.取得初始參數
+	重新定義無參數的init()方法，在其中獲得初始參數
+	(有參數的被GenericServlet類別拿去封裝ServletConfig了，不要呼叫錯)
+	初始參數通常做為常數，習慣上將變數命名為upperCase(全大寫)
+
+07.ServletContext物件
+	此物件是"整個Webapp"的代表物件，在整個webapp載入容器後由容器生成，
+	可以透過ServletConfig的getServletContext()方法獲取此物件，以下是幾個常用方法:
+	(1)getRequestDispatcher():
+		取得RequestDispatcher實例，指定路徑需要以"/"環境根目錄開頭，如此便可執行請求調派:include()或forward()
+		<P.S>
+			"/"作為開頭路徑稱為環境相對路徑(Context-relative)；沒"/"開頭稱為請求相對路徑(Request-relative)
+	(2)getResourcePaths():
+		想知道整個webapp的某個資料夾下有哪些檔案可以使用getResourcePaths()方法，他會傳回Set<String>包含資料夾中所有檔案
+		需要以"/"環境根目錄開頭
+	(3)getResourceAsStream():
+		讀取webapp中的某個檔案時使用，需要以"/"環境根目錄開頭，執行後回傳InputStream實例
+
+08.PushBuilder物件:
+	為了避免在一次的TCP連線中多次對賜福端發出請求造成阻塞而生，PushBuilder讓Servlet在必要的時候
+	可以主動推送資源到瀏覽器，減少了請求的次數(參考書Page.5-11)
+	HttpServletRequest.newPushBuilder()獲得PushBuilder物件，若瀏覽器不支援HTTP/2則回傳NULL，
+	取得PushBuilder後可以使用.path().addHeader()加入主動推送的資源進行推送
+	
+09.ServletContextListener
+	WEB應用程式生命週期傾聽器，webapp在初始化或銷毀前會呼叫ServletContextListener中的
+	contextInitialized()與contextDestroyed()並在呼叫時傳入ServletContextEvent物件
+	可以透過ServletContextEvent.getServletContext()取得ServletContext
+	並透過getInitParameter獲取初始參數
+	<P.S>
+		這邊的初始參數是ServletContext的初始參數，隸屬於整個webapp，在應用程式仍存活的整個期間都會存在(除非主動移除)
+		這些參數是webapp存活期間所有Servlet需要共用的資料。
+	<P.P.S>
+		參數的生命週期差異
+			依據Scope分為:
+				(1)request/response層級		:單次請求與回應後消滅
+				(2)Session層級				:預設透過Cookie進行紀錄，此Cookie預設存活至瀏覽器關閉後消滅
+				(3)ServletConfig層級		:設置的初始參數屬於Servlet，在Servlet初始化時就會存在
+				(4)ServletContext層級		:設置的初始參數屬於整個webapp，在應用程式建立時就存在直到應用程式關閉後消滅
+
+		在web.xml中ServletContext的初始參數使用<context-param>標籤來定義初始參數
+		<listener>與<listener-class>指定ServletContextListener介面的時做類別
+		
+10.獲得SessionCookieConfig		
+	HttpSession的Cookie設定也可以透過ServletContext.getSessionCookieConfig()取得SessionCookieConfig進行設定
+	不過這個動作要在應用程式初始時進行(要寫在contextInitialized(ServletContextEvent sce)裡面)
+	
+11.在ServletContextListener中動態新增Servlet
+	可以在ServletContextListener中的ContextInitialized()之中呼叫ServletContext.addServlet()
+	指定Servlet name之後再使用(自定義)建構式建構實例，最後用ServletRegistration.Dynamic的addMapping()方法
+	指定Servlet的URI Pattern，範例:
+	
+	ServletRegistration.Dynamic servlet= 
+		context.addServlet(
+			"Test",new Test(建構子參數)	->設定Servlet名稱,使用建構子建立實例
+		);
+		servlet.setLoadOnStartUp(1);
+		servlet.addMapping("/test") 	->設定URI模式
+		
+12.ServetContextAttributeListener介面:
+	(1)
+		當ServletContext屬性被設置、移除或替換時，若想收到通知可以實作此介面，
+		以上事件發生時就會呼叫對應的attributeAdded(),attributeRemoved(),attributeReplaced()
+	(2)
+		希望容器部屬應用程式時實例化此介面的實作類別並註冊給應用程式，就在實作類別上標註@WebListener
+		並implements ServetContextAttributeListener介面。
+		也可以再web.xml用以下結構設定:
+			<listener>
+				<listener-class>要用來實作介面的class</listener-class>
+			</listener>
+
+13.HttpSession事件與監聽器
+	與HttpSession相關的五個監聽器:
+	(1)HttpSessionListener:監聽生命週期
+		SessionCreated(HttpSessionEvent se):在起始呼叫
+		sessionDestroyed(HttpSessionEvent se):在結束呼叫
+		可以對HttpSessionEvent使用getSession()取得HttpSession物件對會話進行處理。
+	
+	(2)HttpSessionAttributeListener:監聽屬性的變化
+		attributeAdded(HttpSessionBindingEvent se):新增屬性
+		attributeRemoved(HttpSessionBindingEvent se):移除屬性
+		attributeReplaced(HttpSessionBindingEvent se):置換屬性
+		HttpSessionBindingEvent有getName()與getValue()的方法可以取得屬性設定或移除時指定的名稱與物件
+		
+	(3)HttpSessionBindingListener:物件綁定監聽器
+		valueBound(HttpSessionBindingEvent event):加入Session
+		valueUnbound(HttpSessionBindingEvent event):從Session移除
+		讓即將加入HttpSession的物件實作此介面，在這個物件加入或移除時就會呼叫上面兩個對應的方法
+		HttpSessionBindingEvent.getSession()可取得HttpSession物件
+		
+	(4)HttpSessionActivationListener:物件遷移監聽器，大多時候用不到
+		sessionWillPassivate(HttpSessionEvent se)
+		sessionDidActivate(HttpSessionEvent se)
+		用在分散式環境，httpSession要從一個JVM轉移至另一個JVM時，要先序列化所有屬性物件此時呼叫sessionWillPassivate()
+		遷移完成後對所有物件進行反序列化，並呼叫sessionDidActivate()
+		
+	(5)HttpSessionIdListener:SessionID變化監聽器
+		sessionIdChanged()
+		實作類別可以標註@WebListener或是在web.xml設定
+	
+14.HttpServletRequest事件監聽器:
+	(1)ServletRequestListener:生命週期監聽器
+		requestDestroyed(ServletRequestEvent sre)
+		requestInitialized(ServletRequestEvent sre)
+		ServletRequest初始化或結束前會呼叫上述兩個對應方法，可透過ServletRequestEvent獲得ServletRequest
+		實作此介面的類別需要標註@WebListener或在web.xml設定
+		
+	(2)ServletRequestAttributeListener:屬性監聽器
+		attributeAdded(ServletRequestAttributeEvent srae):新增屬性
+		attributeRemoved(ServletRequestAttributeEvent srae):移除屬性
+		attributeReplaced(ServletRequestAttributeEvent srae):置換屬性
+		與HttpSessionAttributeListener雷同，srae有getName(),getValue()
+		實作類別需要標註或在web.xml設定
+
+	(3)AsyncListener:
+		
+	(4)ReadListener:
+	
+15.過濾器Filter
+	位於service()方法"呼叫之前"以及"呼叫之後容器對瀏覽器發出HTTP回應前"，
+	可以攔截"發送給Servlet的請求"以及"Servlet處理完請求後做出的回應"，
+	並且可以對於攔截到的請求與回應做出改變。
+	常用的有:
+	效能量測、使用者驗證、字元替換與篩檢、編碼設定等等，
+	作為應用程式額外且獨立於程式碼之外的元件，隨時可以新增也隨時可以輕鬆移除
+
+16.實作過濾器
+	Servlet4.0之前:需實作Filter介面並使用@WebFilter標註或在web.xml定義；
+	Servlet4.0以後:新增了HttpFilter繼承自GenericFilter，可以直接繼承HttpFilter來實作Filter
+
+	(1)Filter介面:需實作init(),destroy(),doFilter()三個方法
+		public default void init(FilterConfig fc):
+		public default void destroy():
+		public void doFilter(ServletRequest req,ServletResponse res,FilterChain chain)
+		
+		-FilterConfig是過濾器設定資訊的代表物件，在定義過濾器時如果有設定初始參數可以使用getInitParameter()獲得
+		-doFilter()方法類似於service()方法，請求到達容器後在容器呼叫Servlet的service()之前，可呼叫doFilter()做前置作業
+		-若呼叫FilterChain當中的doFilter()方法，會執行下一個過濾器，如果沒有下一個過濾器則執行Servlet的service()方法
+		-如果未通過上一個Filter就不會呼叫FilterChain的doFilter()，請求就不會傳給下一個Filter或Servlet-->攔截請求
+		<P.S>
+			實作Filter時應把它視為獨立元件，不用理會前後是否有其他Filter
+	
+	(2)GenericFilter與HttpFilter
+		Servlet4.0後新增GenericFilter類別，實作了Filter,FilterConfig,Serializable介面
+		會將FilterConfig以及Filter初始參數取得並做封裝(init(FilterConfig fc))-->參見Page.5-34
+		GenericFilter子類別要定義Filter初始化可以重新定義無參數的init()方法
+	
+	(3)@WebFilter標籤
+		使用上與@WebServlet類似，可以在其中設定URI-pattern,Filter名稱,指定Servlet名稱,初始參數
+		同理可使用web.xml設置且xml優先級較高會覆蓋掉標註的設定
+
+	(4)觸發時機
+		預設為瀏覽器直接發出請求，透過RequestDispatcher調派的請求可以設定@WebFilter 的 dispatcherTypes
+		
+17.請求包裹器
+	因為ServletRequest與HttpServletRequest物件無法直接修改某些資訊(例如請求參數)，
+	若要修改你可能會想要親自實作HttpServletRequest與HttpServletResponse介面，
+	然而把所有方法都實作過去太麻煩了，因此使用ServletRequestWrapper這個實作了ServletRequest介面的類別，
+	重新定義自己想要的方法即可，同理HttpServletRequest也有HttpServletRequestWrapper可以用
+	
+	Wrapper在重新定義完需要的方法後，將原先的請求包裹起來，此時Filter和Servlet不會知道也不需要知道請求已經被包裹，
+	維持照常呼叫原先預定要使用的方法即可(已經透過Wrapper重新定義過)
+	
+	回應包裹器見Page.5-42
+	
+18.非同步處理(詳細見Page.5-48)
+	WEB容器為每個請求分配一個執行緒，若執行緒被一些長時間的請求占用會影響webapp的承載能力
+	Servlet3.0後新增了非同步處理，可以先釋放容器分配給請求的Thread去服務其他請求，
+	被釋放了Thread的請求交由應用程式本身分配的Thread去處理
+
+--------------------------------------------------------------------------------------------
+CHAPTER06.使用JSP
+
+01.JSP最後也會經由容器進行:轉譯為Servlet原始碼->自動編譯為.class檔案->載入.class檔案然後生成Servlet物件
+	
+02.容器如何控制JSP生命週期
+	轉譯後JSP就像Servlet一樣，初始化是由容器呼叫_jspInit()方法、容器呼叫_jspDestroy()方法是銷毀，
+	當有請求到來時，容器呼叫_jspService()方法。
+	呼叫這些方法的原因是因為：
+		HttpJspBase類別繼承了HttpServlet類別(有init(),destroy(),service())，並且實作了HttpJspPage介面
+	
+	(1)HttJspPage介面：	
+		規範了jspinit(),jspDestroy(),_jspService()方法
+		
+		HttpJspBase下的三方法：
+		init():		呼叫了jspInit(),_jspInit()，若想在JSP載入時進行初始化動作應重新定義jspInit()方法
+		destroy():	則是呼叫了jspDestroy(),_jspDestroy()，若想做收尾動作應重新定義jspDestroy()方法
+		service():	呼叫了_jspService()方法，在JSP轉譯後定義的程式碼轉譯在_jspService()，因此會在請求來時執行
+		
