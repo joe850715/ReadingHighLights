@@ -741,11 +741,15 @@ CHAPTER06.使用JSP
 	呼叫這些方法的原因是因為：
 		HttpJspBase類別繼承了HttpServlet類別(有init(),destroy(),service())，並且實作了HttpJspPage介面
 	
-	(1)HttJspPage介面：	
+	(1)HttpJspPage介面：	
 		規範了jspinit(),jspDestroy(),_jspService()方法
-		
 		HttpJspBase下的三方法：
 		init():		呼叫了jspInit(),_jspInit()，若想在JSP載入時進行初始化動作應重新定義jspInit()方法
 		destroy():	則是呼叫了jspDestroy(),_jspDestroy()，若想做收尾動作應重新定義jspDestroy()方法
 		service():	呼叫了_jspService()方法，在JSP轉譯後定義的程式碼轉譯在_jspService()，因此會在請求來時執行
-		
+
+
+--------------------------------------------------------------------------------------------
+CHAPTER07.使用JSTL
+
+	
