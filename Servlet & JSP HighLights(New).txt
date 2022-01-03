@@ -747,9 +747,126 @@ CHAPTER06.使用JSP
 		init():		呼叫了jspInit(),_jspInit()，若想在JSP載入時進行初始化動作應重新定義jspInit()方法
 		destroy():	則是呼叫了jspDestroy(),_jspDestroy()，若想做收尾動作應重新定義jspDestroy()方法
 		service():	呼叫了_jspService()方法，在JSP轉譯後定義的程式碼轉譯在_jspService()，因此會在請求來時執行
+		
+03.隱含物件(Implicit Object)
+	JSP有Implicit Object		
 
 
 --------------------------------------------------------------------------------------------
 CHAPTER07.使用JSTL
 
+
+--------------------------------------------------------------------------------------------
+CHAPTER08.自訂標籤
+
+01.自訂標籤(Tag File, Simple File, Tag自訂標籤)
+	當需求無法靠JSTL或是需要自訂更簡便的方法時可以自訂標籤庫來使用
+	例如每個頁面如果都需要錯誤處理標籤，就可以將錯誤處理變成標籤檔案
+	
+	(1)Tag File
+		附檔名是.tag的標籤檔案，必須存放於WEB-INF/tags的資料夾中，
+		tag檔案:
+			可以使用tag指示元素，給定兩個屬性：
+				-description:純粹的文字描述
+				-PageEncoding:告知容器這個tag的編碼
+			另外也可以使用taglib指示元素引用其他標準標籤或自訂標籤庫
+
+		使用tag檔案的JSP:
+			使用taglib指示元素定義兩屬性:
+				-prefix:前贅詞
+				-tagdir:Tag檔案存放的位置(必須在WEB-INF/tags的子資料夾中)
+	
+		Tag File的 body-content屬性:<%@tag body-content="scripless" pageEncoding="UTF-8"%>
+			scriptless(預設):標籤本體不能使用Scriplet元素
+			empty:沒有本體內容，只能使用<html:XXX/>的形式，不能使用有Opening tag & Closing Tag的作法
+			tagdependent:將本體內容當作純文字處理
+
+02.TLD檔案(Page8-7)
+	
+03.Simple Tag自訂標籤(Page.8-12)
+	在Tag File中建議不要撰寫Scriptlet，如果還是免不了要對Java物件操作，可以考慮Simple Tag，把Java寫在其中
+	實作Simple Tag需要了解更多細節，以模仿JSTL<c:if>標籤，做出一個<f:if>為例：
+	(1)建立.java檔繼承javax.servlet.jsp.targxt.SimpleTagSupport實作標籤處理器-->重新定義doTag()方法
+	(2)建立.tld檔 給定uri作為對應給taglib指示元素用，給定name,tag-class,body-content,attribute(Page.8-10)屬性
+	(3)使用時taglib指示元素找到對應URI的.tld再透過名稱與tag-class找到對應java檔
+	
+	生命週期:
+		1.建立自訂標籤處理器實例
+		2.呼叫標籤處理器的setJspContext()方法設定PageContext()
+		3.巢狀標籤的內層標籤會叫setParent()並傳入外層標籤的實例
+		4.設定標籤處理器的屬性(呼叫.java中的setXXX()方法)
+		5.呼叫setJspBody()方法設定JspFragment實例
+		6.呼叫doTag()方法
+		7.銷毀標籤處理器實例
+		
+		每當JSP包括Simple Tag自訂標籤時，每一次的請求都會建立新的標籤處理器實例，執行doGet()後就銷毀這個實例，
+		因此建議Simple Tag的實作中不要有耗資源的動作(例如龐大的物件、取得連線物件等等)
+	
+04.Tag自訂標籤
+	透過Tag介面相關的類別來實作標籤，可以繼承javax.servlet.jsp.tagext.TagSupport實作標籤處理器
+	繼承TagSuppot的類別中會覆寫doStartTag()方法，當JSP開始處理標籤時，會呼叫此方法並根據回傳直決定是否執行本體內容
+	(1)回傳EVAL_BODY_INCLUDE	:執行本體內容
+	(2)回傳SKIP_BODY			:不執行本體內容
+	
+	生命週期:(Page.8-27)
+		實作Tag介面相關類別時，依照不同的時機要定義不同的doXXXTag()方法，依照需求回傳不同的值，
+		TagSupport類別提供Iterator介面的基本實作，只要在繼承TagSupport後重新定義必要的方法即可
+		
+		JSP遇到TagSupport時的動作流程:
+		1.嘗試從標籤池中(Tag Pool)找到可用物件，找到就直接用不然就建立新的
+		2.呼叫標籤處理器的setPageContext()方法設定PageContext()
+		3.巢狀標籤的內層標籤會叫setParent()並傳入外層標籤的實例
+		4.設定標籤處理器的屬性(呼叫.java中的setXXX()方法)
+		5.呼叫標籤處理器的doStartTag()依照回傳值決定是否執行標籤本體或呼叫doAfterBody(),doEndTag()
+		6.將標籤處理器實例放入標籤池中以便重新使用
+		
+		注意Tag實例可以被重複使用，必要時可以在doStartTag()中進行狀態重置(否則可能會有狀態留存)，
+		重置狀態的動作放在doStartTag()中進行，比方說把判斷用的boolean重置為true/false
+		不要使用release()!!! 這是在標籤實例被銷毀回收前呼叫的
+		
+	
+	回傳值與動作的對應:
+	-doStartTag()		:回傳EVAL_BODY_INCLUDE或是SKIP_BODY，預設為SKIP_BODY
+							在回傳EVAL_BODY_INCLUDE之後會先執行一次本體再呼叫doAfterBody()，因此本體已經執行過一次
+	
+	-EVAL_BODY_INCLUDE	:獲得此回傳值就執行方法本體
+	
+	-doAfterBody()		:"可以"回傳EVAL_BODY_AGAIN(相當於SimpleTag的doTag()呼叫了JspFragment的invoke())
+							若回傳EVAL_BODY_AGAIN會再次執行本體，然後再度呼叫doAfterBody()直到回傳SKIP_BODY
+							
+	-SKIP_BODY			:不想執行本體時回傳此常數並呼叫doEndTag()
+	
+	無論有無執行本體，最後都會來到doEndTag()，這邊可能回傳:
+		-EVAL_PAGE:執行自訂標籤後續的JSP頁面
+		或
+		-SKIP_PAGE:不執行自訂標籤後續的JSP頁面
+		
+05.Tag自訂標籤-取得本體執行結果
+	需要透過繼承BodyTagSupport類別，BodyTagSupport類別繼承了TagSupport類別，
+	BodyTagSupport將doStartTag()預設傳回值從EVAL_BODY_INCLUDE改為EVAL_BODY_BUFFER
+	當doStartTag()回傳EVAL_BODY_BUFFER，會依序呼叫setBodyContent(),doInitBody()兩方法，然後再執行標籤本體
+	
+	執行過setBodyContent(),doInitBody()兩方法之後可以透過getBodyContent()取得BodyContent物件(Writer的子物件)
+	包括了本體執行後的結果，可以使用BodyConten.getString取得字串回傳結果，
+	若要輸出到瀏覽器，要在doEndTag()中使用pageContext的getOut()取得JspWriter物件進行輸出
+	
+	
+	
+--------------------------------------------------------------------------------------------
+CHAPTER09.整合資料庫
+
+01.使用JDBC六大步驟
+	(1)導入JDBC driver
+	(2)註冊JDBC driver
+	(3)建立起一個連線
+	(4)執行查詢或其他SQL指令
+	(5)從ResultSet獲得資料
+	(6)清理環境(關閉物件,把連線放回連線池)
+	
+02.應用程式與資料庫的溝通
+	不少資料庫是獨立運行的伺服器程式，應用程式利用網路的通訊協定與資料庫伺服器溝通，以進行資料的CRUD	
+
+03.	
+		
+	
 	
