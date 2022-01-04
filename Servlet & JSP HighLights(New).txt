@@ -902,5 +902,155 @@ CHAPTER09.整合資料庫
 		原理：將JDBC呼叫轉換為與資料庫特定的網路協定，以與資料庫進行溝通操作
 		概述：將JDBC呼叫轉換為特定網路協定，驅動程式可以使用純Java展現，也可以跨平台，效能表現也不錯
 		
-06.
-			
+06.JDBC Driver註冊
+	很少自行撰寫程式碼，只要想辦法載入Driver介面的實作類別.class檔，就會完成註冊
+	載入的方式有四種：(Page.9-12)
+	(1)使用Class.forName()
+	(2)自行建立Driver實作類別的實例(自己撰寫程式碼)
+		java.sql.driver driver = new 廠商實作介面的類別();
+	(3)啟動JVM時指定jdbc.drivers屬性
+	(4)設定JAR中/services/java.sql.Driver檔案
+		JavaSE6之後，JDBC4.0特性，只要在驅動程式實作的JAR檔/services資料夾中，放置一個java.sql.driver檔案，
+		當中撰寫Driver介面的實作類別名稱全名，DriverManager就會自動讀取這個檔案，找到對應類別完成註冊
+
+07.取得連線物件(Connection實作物件)			
+	透過DriverManager.getConnection()產生，建立時需要三個引數分別是：
+	(1)使用者名稱
+	(2)密碼
+	(3)JDBC URI
+		這個定義了連接資料庫時的協定、子協定、資料來源識別，結構是：
+		協定:子協定:資料來源識別 
+		除了協定固定jdbc開頭之外，各加時做廠商的URI格式都不相同，需要查詢各家的手冊
+		Connection conn = DriverManager.getConnection(jdbcuri,username,password);
+		
+	DriverManager在底層會逐一嘗試Driver取得連線，成功時回傳Conn物件，過程中有紀錄的例外就拋出，
+	全部嘗試過也無法取得Conn物件也會拋出例外。可使用isConnectedOK()看看是否連線成功。	
+
+08.關閉Connection物件
+	操作完資料庫齁需要關閉Connection物件釋放資源，可以使用isClose()測試與資料庫連結是否關閉，
+	JDK7以後，Connection,Statement,ResultSet等介面都是java.lang.AutoCloseable的子介面，
+	可以使用try-with-resource寫法使其用完後自動關閉，
+	就可以不用寫原本的try-catch-finally結構
+	
+09.Statement物件
+	Connection建立後，若要執行SQL需要先建立Statement物件作為陳述SQL的代表物件，
+	使用conn.getConnection()建立Statement物件，取得後可以使用executeUpdate() / executeQuery() 執行SQL
+	executeUpdate()	:
+		主要用來執行Create table, insert, drop table, alert table等會改變資料庫內容的SQL，
+		回傳int結果表示資料變動筆數。
+	executeQuery()	:
+		主要用於Select等查詢的SQL，會回傳javas.sql.ResultSet物件代表查詢結果，會是一筆一筆的資料
+		資料的指示位置(cursor)一開始會在第一筆資料"之前"，可以透過resultSet.next()移動到下一筆
+		
+10.ResultSet物件
+	取得查詢結果物件後，可以使用getXXX()取得資料EX.getString(),getInt(),getDouble(),getFloat()，
+	可以使用"欄位名稱"當作引數傳入上述方法，取得對應欄位名稱的型態資料，
+	也可以使用正整數(從1開始)當引數傳入，依照欄位順序取得資料
+
+11.Excute()方法	
+	此方法會在執行SQL時自動測試SQL是執行查詢或是更新，
+	當回傳true的時候表示SQL將執行查詢並回傳resultSet，可以使用getResultSet取得結果，
+	回傳false時表示SQL執行更新，將會回傳變動資料筆數或沒有結果，可使用getUpdateCount()取得更新筆數
+	
+12.關閉物件
+	Statement, ResultSet不使用時可以使用Close()關閉，當Statement關閉時關聯的ResultSet也會自動關閉
+
+13.PreparedStatement, CallableStatement物件
+	
+	PreparedStatement:
+		解決使用+號串聯SQL語句的不便，當語句中只有參數不同時，
+		可以使用PreparedStatement()方法預先編譯(precompile)SQL語句的部分(加快速度)參數的部分使用佔位字元"?"暫時填充
+		後續使用prepareStatement.setInt()/.setString()/.setXXX()的方式進行設置
+		設置時需要傳入兩個引數分別是int(表示第幾個佔位字元),內容(符合setXXX的資料型別內容)，範例:
+		setString(1,"JOE")-->第一個佔位字元填入字串"JOE"
+		
+	CallableStatement物件基本上與PreparedStatement差異不大，主要用於呼叫預存程序，
+	也表示應用程式將與資料庫產生直接的相依性。
+
+	在使用這兩個物件時需要注意SSQL的資型態與Java資料型態的對應
+	
+14.JNDI
+	將伺服器設置的從程式碼獨立出來，比如username,password,uri,資料庫實體位址,port,名稱...等，
+	將這些東西設定好，將web.xml & context.xml的<Resource/>定義好之後，
+	開發者唯一需要知道的就只剩下JNDI名稱，只需透過JNDI名稱找到DataSource並取得connection物件
+	
+15.ResultSet物件(Page.9-28)	
+	(1)
+		JDBC2.0開始，ResultSet可以使用previous(),first(),last()等方式移動cursor，
+		也可以呼叫updateXXX(),updateRow()等方法來修改資料。
+	(2)
+		使用Connection建立statement/preparedStatemant時可以指定結果集類型以及並行方式
+	(3)
+		對於資料的捲動(cursor的移動) & 是否可以使用resultSet修改資料也可以進行設定
+
+16.BLOB / CLOB型別
+	(1)BLOB(Binary Large Object)	:用以儲存大量的二進制資料，如圖片、影音等等
+		可以使用pstmt.setBlob()來做資料的設定
+		ResultSet.getBlob()取得Blob()物件
+		Blob擁有.getBinaryStream(), .getBytes()方法，可以取得欄位來源的InputStream或是Bytes[]
+		.setBinaryStream(), .setBytes()則可以設定代表輸入來源的InputStream以及byte[]資料
+		
+	(2)CLOB(Character Large Object)	:用以儲存大量的文字資料
+	
+17.交易(Transaction)(Page.9-40)
+	
+	(1)四大特性：(簡稱ACID)
+		(1)原子性(Atomicity)			:一個交易為一個單元工作(Unit of Work)，其中數個步驟，只有全部成功或是全部失敗
+											只有全部都成功才COMMIT，任何一步失敗都會造成ROLLBACK
+		(2)一致性(Consistency)			:交易相關的資料集合在交易前後需要一致，交易成功就應該在操作後的狀態，
+											若交易失敗就應該回到交易前的狀態
+		(3)隔離行為(Isolation behavior)	:在多人環境下，使用者各自進行交易且交易之間互不干擾
+		(4)持續性(Durability)			:交易一旦成功其結果必須保存下來，即使系統掛了結果也不能遺失
+	
+	(2)ROLLBACK位置設定
+		交易管理時想撤回某個SQL執行點可以設定儲存點(savepoint)
+		point= conn.setSavepoint();
+	
+	
+18.資料更新時可能發生的不一致問題(Page.9-44)
+	(1)更新遺失(Lost Update)
+		一個交易對欄位進行更新的資訊被另一個交易介入而導致遺失更新效力，發生在交易未隔離的情況
+	
+	(2)髒讀(Dirty read)
+		兩交易同時進行，其中一個更新後未確認時，另一個交易就讀取那個資料
+	
+	(3)無法重複讀取(Unrepeatable read)
+		某個交易兩次讀取同一欄位的資料並不一致，例如A交易在B交易更新前後進行讀取
+	
+	(4)幻讀(Phantom read)
+		同一交易期間讀取到的資料筆數不一致，如A交易在B交易進行會變動到資料筆數更新的前後進行讀取
+		
+19.METADATA簡介
+	MetaData是詮釋資料的資料，可透過Connection.getMetaData()取得DataBaseMetaData,
+	透過此物件取得資料庫整體資訊；ResultSet也有getMetaData()可以取得MetaData物件...
+	
+20.JSTL有提供的SQL標籤庫作為JDBC程式碼的替代(Page.9-53)
+
+--------------------------------------------------------------------------------------------
+CHAPTER10.WEB容器安全管理
+
+01.四個安全基本特性：
+	(1)驗證(Authentication)
+		確認當前溝通對象身分是否有權限
+	(2)資源存取控制(Access Control for resources)
+		基於完整性、機密性、可用性限制等目的對資源的存取設限
+	(3)資料完整性(Data Integrity)
+		資訊傳輸期間必須保證資訊的內容不被第三方修改
+	(4)資料機密性或隱私性(Confidentiality or Data Privacy)
+		只讓具有合法權限的使用者存取特定資料
+		
+--------------------------------------------------------------------------------------------
+CHAPTER11.Java Mail入門
+
+01.要使用JavaMail傳送郵件首先必須建立代表當次郵件會話的javax.mail.Session，
+	Session包括了SMTP郵件伺服器位址、連接埠、使用者名稱、密碼等資訊
+	
+--------------------------------------------------------------------------------------------
+CHAPTER12.Spring框架概論
+
+01.Spring的核心功能
+	(1)依賴注入(Dependency Injection)
+	
+	(2)控制反轉(Inversion of Controll)	
+	
+	(3)AOP(Aspect-Oriented Programming)

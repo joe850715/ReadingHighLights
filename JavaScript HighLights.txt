@@ -1,0 +1,6 @@
+-------JAVASCRIPT HIGHLIGHTS-------
+CHAPTER01.概述
+
+01.JavaScript是由瀏覽器去執行的程式語言，瀏覽器還會位HTML頁面建立可供JS使用的物件模型(ObjectModel)
+02.如何將JS加入頁面?
+	於<head>標籤中使用<script>JS寫在這裡!或是用路徑引入外部JS檔案</script>
