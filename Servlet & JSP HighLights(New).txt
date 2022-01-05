@@ -7,7 +7,7 @@ CHAPTER01.簡介WEB應用程式
 	(1)URL(Uniform Resource Locator):最早出現的標準
 	(2)URN(Uniform Resource Name):代表某個資源獨一無二的"名稱"，與URL相同用來識別資源用
 	(3)URI(Uniform Resource Identifier):最晚出現，URL與URN成為了URI的子集
-	範例參照書籍page 1-5
+	範例參照Page. 1-5
 	
 02.何為HTTP
 	HTTP作為一種通訊協定，定義了兩台電腦間的溝通方式，也就是Client與Server端連線、交換資訊的確認步驟
@@ -738,7 +738,7 @@ CHAPTER06.使用JSP
 02.容器如何控制JSP生命週期
 	轉譯後JSP就像Servlet一樣，初始化是由容器呼叫_jspInit()方法、容器呼叫_jspDestroy()方法是銷毀，
 	當有請求到來時，容器呼叫_jspService()方法。
-	呼叫這些方法的原因是因為：
+	呼叫這些方法的原因是：
 		HttpJspBase類別繼承了HttpServlet類別(有init(),destroy(),service())，並且實作了HttpJspPage介面
 	
 	(1)HttpJspPage介面：	
