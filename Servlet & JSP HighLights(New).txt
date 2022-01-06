@@ -744,17 +744,127 @@ CHAPTER06.使用JSP
 	(1)HttpJspPage介面：	
 		規範了jspinit(),jspDestroy(),_jspService()方法
 		HttpJspBase下的三方法：
-		init():		呼叫了jspInit(),_jspInit()，若想在JSP載入時進行初始化動作應重新定義jspInit()方法
+		init()	 :	呼叫了jspInit(),_jspInit()，若想在JSP載入時進行初始化動作應重新定義jspInit()方法
 		destroy():	則是呼叫了jspDestroy(),_jspDestroy()，若想做收尾動作應重新定義jspDestroy()方法
 		service():	呼叫了_jspService()方法，在JSP轉譯後定義的程式碼轉譯在_jspService()，因此會在請求來時執行
 		
+		從JavaEE7的JSP2.3開始，JSP只接受GET,POST,HEAD請求
+		
 03.隱含物件(Implicit Object)
-	JSP有Implicit Object		
+	JSP有Implicit Object共九個，是JSP轉譯為Servlet後會出現在某些區塊的區域變數，變數如下:
+	(1)Application	:對應到ServletContext，是整個應用程式代表物件
+	(2)Page			:對應 this 的概念
+	(3)PageContext	:對應pageContext物件，提供JSP頁面資源的封裝並且可以設定pageScope
+	(4)Out			:對應JspWriter物件，內部關聯一個PrintWriter物件
+	(5)Request		:對應HttpServletRequest物件
+	(6)Response		:對應HttpServletResponse物件
+	(7)Exception	:對應Throwable物件，由其他頁面拋出的例外物件只能用於isErrorPage屬性=true的頁面
+	(8)Session		:對應HttpSession物件
+	(9)Config		:對應ServletConfig物件，是Servlet的代表物件
+	
+04.JSP轉譯為Servlet的編碼
+	可以用page指示元素在JSP頁面第一行指定ContentType="text/html",pageEncoding="UTF-8"
+	告訴容器在將JSP轉成Servlet的時候使用UTF-8讀取JSP轉譯為java，編譯使用UTF-8
 
+05.JSP轉譯時需要import的類
+	可以用page指示元素設定import屬性:import="要引入的類,要引入的類2..."(用逗號來分隔)
 
+06.各類常用JSP元素(Page.6-10)
+	(1)指示元素(<%@ %>):
+		在容器將JSP轉為Servlet時給定一些必須遵守的資訊，常用的三種類型有page,include,taglib
+		page:如何轉譯JSP網頁/include:告知容器將指定JSP頁面包括進來轉譯/taglib:指示如何轉譯義頁面中的標籤庫
+		
+		*區別：
+			使用指示元素include JSP頁面	:最後只會生成一個Servlet，轉譯時期會決定轉譯後的內容
+			使用<jsp:include>包括JSP頁面:包括與被包括的頁面會各自生成獨立的Servlet
+		
+	(2)宣告元素(<%! %>):
+		宣告於此的程式碼會轉譯成為Servlet中的類別成員或方法，由於容器使用同一個Servlet實例來服務多個請求，
+		每個請求分配一個執行緒，這邊宣告的變數對應至類別變數成員，因此會有執行緒共用問題
+		
+	(3)Scriptlet元素(<% %>):
+		這其中可以撰寫Java陳述句，會被轉譯成_jspService()方法中的內容
+		要注意這邊不可以宣告方法，因為Java不允許方法中存在其他方法
+	
+	(4)運算式元素(<%= %>):
+		運算式元素中的內容會轉譯成out.print()中的內容所以不用在結尾加分號
+		
+07.四種Scope屬性
+	可以透過pageContext設定四種範圍屬性:
+		pageScope->requestScope->sessionScope->applicationScope
+		同時這也是在getAttribute()未指定Scope的時候會依序搜尋對應變數的次序
+	*區別:
+		對比一下Servlet的範圍屬性，只有三種：
+		requestScope->sessionScope->servletContextScope(對應application,其中的變數由同個webapp的所有Servlet共用)
+		
+08.錯誤處理
+	三個可能發生錯誤的階段:
+	轉譯時期錯誤:轉譯失敗造成
+	編譯時期錯誤:Unable To Compile訊息
+	執行時期錯誤:Processing XXX 出問題或最常見的NullPointerException
+		
+09.標準標籤
+	JSP規範提供這些標籤，容器基本都支援，主要目的在於減少Scriplet的使用以下幾個常用的:
+	(1)<jsp:include>	:無法在執行時期依照條件動態包括的JSP頁面，可以使用此標籤進行動態包括
+							當前頁面與被此標籤包括地JSP頁面會各自生成獨立的Servlet，
+							且當前頁面轉譯成的Servlet中會取得RequestDispatcher物件並執行include()方法
+							
+	(1-2)<jsp:param/>	:指定了提供給被動態包括頁面的請求參數
+	
+	(2)<jsp:forward>	:與<jsp:include>相同，兩個頁面各自生成Servlet，
+							且當前頁面轉譯成的Servlet中會取得RequestDispatcher物件並執行forward()方法
+	
+	(3)<jsp:useBean>	:用來搭配JavaBean元件的標準標籤，可以搭配<jsp:setProperty>/<jsp:getProperty>進行set/get
+							範例:<jsp:useBean id="user" class="practice.test.User" scope="request">
+							id屬性對應給後續<jsp:setProperty>/<jsp:getProperty>的name屬性
+							class指定了實例化哪個類別
+							scope指定屬性範圍(預設為page可自行調整)
+						 
+	(4)<jsp:setProperty>:用來設定JavaBean屬性值，範例:<jsp:setProperty name="user" property="*">
+							name屬性對應到useBean的id屬性，
+							property設定為"*"代表自動尋找符合Bean物件中設值方法名稱的請求參數值EX.xxx屬性->setXxx()
+							透過JavaBean中的內省功能(IntroSpection)判斷是否有相同的請求參數名稱，對應到其設值方法
+	
+	(5)<jsp:getProperty>:用來設定JavaBean對應屬性值，範例:<jsp:getProperty name="user" property="name">
+							name屬性對應到useBean的id屬性，並取得其name屬性值
+							
+10.運算式語言(Expression Language):
+	JSP中一些簡單的屬性、請求參數、標頭與Cookie等訊息的取得都是簡單的運算或判斷，可以試著使用EL
+	更進一步減少Scriptlet的使用
+
+11.當EL運算式中的結果為null時，會自動以空字串顯示且自動轉換成基本型態並做運算
+	
+12.若不想使用EL可以透過page指示元素將isELIgnore屬性設置為true
+	
+13.EL運算式中的隱含物件：
+	EL提供11個隱含物件，除了PageContext對應PageContext物件之外，其他都是對應Map型態，各物件如下
+	(1)pageContext		:對應於pageContext型態
+	(2)pageScope		
+	(3)requestScope		
+	(4)sessionScope		
+	(5)applicationScope	:以上四位分別可用來取得四種範圍屬性的setAttribute()設定的屬性(預設從page範圍開始尋找)
+	(6)param			:取得請求參數
+	(7)paramValues		:取得一組請求參數(例如表單多選項)
+	(8)header			:相當於request.getHeader("name")
+	(9)headerValues		:相當於request.getHeaders()取得所有標頭
+	(10)cookie			:取得Cookie，若其中設定了"user"屬性，可以用cookie.user取得
+	(11)initParam		:可以取得ServletContext初始參數
+	
+14.自訂EL函式
+	要先讓容器知道哪些方法要做為EL函式，因此需要先定義.tld檔
+	其中<uri>標籤設定對應URI名稱，並在後續的<function>標籤中設定自訂EL函式名稱、
+	對應的java class，以及對應的方法(回傳值 方法名(參數的class全名))
+	要引入時使用taglib指示元素，設定prefix並透過剛剛設定的uri引入之後即可使用(就像用JSTL一樣)	
+	
 --------------------------------------------------------------------------------------------
 CHAPTER07.使用JSTL
 
+01.JSTL是另一種標準規範，並非在JSP規範當中
+
+02.核心標籤庫:
+	(1)流程處理標籤，常用有:
+		1.<c:if test="${運算式}">
+		2.
 
 --------------------------------------------------------------------------------------------
 CHAPTER08.自訂標籤
