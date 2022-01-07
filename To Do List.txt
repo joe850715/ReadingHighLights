@@ -5,7 +5,7 @@
 
 3. Study JSP/Servlet				V
 
-4. Study JavaScript								
+4. Study JavaScript					V			
 
 5. Study Java SE & EE				
 
@@ -24,7 +24,7 @@
 		
 ---Progress Planning
 
-1.JSP/Servlet Reading Progress:
+1.JSP/Servlet Reading Progress:	V
 	-2021/12/27	CH1~CH3
 	-2021/12/28	CH3~CH5
 	-2021/12/29	CH6~CH8
@@ -35,7 +35,7 @@
 	
 	Practice Answer download link : http://books.gotop.com.tw/download/AEL024500
 	
-2.JavaScript Reading Progress:
+2.JavaScript Reading Progress:	V
 	-2022/01/05	CH1-CH3
 	-2022/01/06	CH4-CH5
 	-2022/01/07	CH6-CH7

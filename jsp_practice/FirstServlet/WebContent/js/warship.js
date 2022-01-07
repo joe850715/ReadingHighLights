@@ -15,7 +15,7 @@ while(isSunk==false){
 		alert("the value is illegal !");
 	}else{
 		if(isInRange(parsed)){
-			alert("value out of range !");
+			alert("value out of range !"); 
 		}else{
 			guesses=guesses+1;
 			isHit(parsed);
