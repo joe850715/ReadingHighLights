@@ -255,7 +255,7 @@ CHAPTER03.請求與回應
 	(2)Get Request:
 		處理URI的是HTTP伺服器而非WEB容器，若要轉UTF-8可用以下方式處理編碼:
 		String name = request.getParameter("name");
-		String name = new String(name.getBytes("ISO-8859-1"),"UTF-8")
+		String name = new String(name.getBytes("ISO-8859-1"),"UTF-8");
 	
 		<P.S>Tomcat8以後，附帶的HTTP Server預設使用UTF-8，便不需要自行轉換編碼了
 		
@@ -268,9 +268,9 @@ CHAPTER03.請求與回應
 	
 08.取得上傳的檔案(參考書籍Page.3-23)
 	(1)使用getInputStream()取得ServletInputStream(InputStream的子類別)，代表請求本體的串流物件
-	<P.S>
-		同一請求期間getReader()與getInputStream()只能擇一呼叫，
-		兩者都呼叫會拋出IllegalStateException
+		<P.S>
+			同一請求期間getReader()與getInputStream()只能擇一呼叫，
+			兩者都呼叫會拋出IllegalStateException
 		
 	(2)使用getPart()處理上傳的檔案
 		Servlet3.0之後可以使用getPart()來處理上傳的檔案，
@@ -516,9 +516,9 @@ CHAPTER05.SERVLET API、過濾器與傾聽器
 
 04.GenericServlet類別
 	(1)主要目的
-		將初始Servlet呼叫init()時傳入的ServletConfig引數封裝起來
+		將初始Servlet呼叫init(ServletConfig config)時傳入的ServletConfig引數封裝起來
 		在GenericServlet實作Servlet的init()的同時，也呼叫了另一個無參數的init()，
-		轉寫Servlet時如果有一些需要在初始階段執行的動作就可以重新定義這個無參數的init()方法
+		撰寫Servlet時如果有一些需要在初始階段執行的動作就可以重新定義這個無參數的init()方法
 	(2)實作方法
 		GenericServlet也簡單實作了Servlet介面與ServletConfig介面定義的方法，
 		可以透過ServletConfig來取得資訊，例如:
@@ -528,6 +528,7 @@ CHAPTER05.SERVLET API、過濾器與傾聽器
 		-getServletContext()		:ServletContext
 		同時HttpServlet類別繼承了GenericServlet類別，
 		因此當我們撰寫Servlet extends HttpServlet的時候也可以使用上述方法取得必要資訊而不用意識到ServletConfig存在
+		也因此Servlet必須繼承HttpServlet類別
 
 05.初始參數(InitParameter)設定
 	(1)使用標註設定
@@ -862,10 +863,99 @@ CHAPTER07.使用JSTL
 01.JSTL是另一種標準規範，並非在JSP規範當中
 
 02.核心標籤庫:
-	(1)流程處理標籤，常用有:
-		1.<c:if test="${運算式}">
+	流程處理標籤，常用有:
+		1.
+			<c:if test="${運算式}">
+		
 		2.
+			<c:choose>
+				<c:when test=${運算式}> ->若為true執行when本體
+				</c:when>
+				<c:otherwise>			->若為false執行otherwise本體
+				</c:otherwise>
+			</c:choose>
+			其中，可以有多個when標籤，上面執行下來若遇到其中一個為true，則後續不會再執行其他when跟otherwise
+		
+		3.
+			<c:forEach var="message" items="${物件名[.物件屬性名]}">
+			var作為後續在forEach本體中調用此變數的名稱
+			若item指定了一個Map，設給var的物件會是Map.Entry，具有getKey() & getValue()方法	
+			
+		4.錯誤處理標籤
+			<c:catch var="error">
+				此執行區域中若發生例外匯把例外務件設定給var名稱
+			</c:catch>
+			由於例外物件都是Throwable子類，都會擁有getMessage()方法，後續可用${error.message}取得例外訊息
+			
+		5.動態匯入頁面
+			<c:import url="指定頁面URI" charEncoding="UTF-8">
+				<c:param name="a" value="10"/>
+				<c:param name="b" value="20"/>
+			</c:import>
+			此標籤可以在執行時期動態匯入指定的URI頁面，也可以匯入外部網頁內容
+			並可以搭配param標籤指定請求參數，也可以設定charEncoding屬性指定目標網頁編碼
+			
+		6.重新導向標籤
+			<c:redirect url="test.jsp">
+				<c:param name="a" value="10">
+				</c:param name="b" value="20">
+			</c:redirect>
+			此標籤如同HttpServletResponse的sendRedirect()方法，不用寫Scriptlet就可以重新導向
+			導向時如果需要請求參數可以透過<c:param>進行設定
 
+		7.屬性處理標籤
+			(1)
+				<c:set var="user" value="${param.user}" scope="session"/>
+				相對於<jsp:setProperty>只能設定JavaBean的屬性
+				<c:set>標籤可以設定指定屬性的值以及範圍
+				其中value的設定也可以寫在標籤本體(between opening tag and closing tag)
+				不指定範圍時的搜索順序:page->request->session->application
+			(2)
+				<c:remove var="user" scope="session">
+				用來移除指定屬性，未指定範圍時搜尋順序:page->request->session->application
+			
+		8.輸出標籤	
+			<c:out ="${param.message}">
+			可以輸出指定文字
+			
+03.I18相容性標籤庫
+	透過標籤協助使用者進行格式、語系的本地化(Localization)
+	(1)透過標籤執行ResourceBundle的功能：
+		1.引入fmt標籤:
+			<%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+		
+		2.使用<fmt:bundle>/<fmt:message>/<fmt:setBundle>標籤
+			<fmt:bundle basename="messages1">
+				<fmt:message key="cc.openhome.title">
+				<fmt:message key="cc.openhome.forGuest">
+			</fmt:bundle>
+			basename屬性表示了預設的訊息檔案為messages1.properties
+			<fmt:message>的key屬性則指定訊息檔案中的哪條訊息
+			
+			另外可用<fmt:setBundle/>設置basename，預設效力範圍是整個頁面，
+			若額外有設置<fmt:bundle>則本體中的區塊會以<fmt:bundle>設置的為主
+			
+	(2)地區標籤(Page.7-18)
+	(3)格式標籤(Page.7-24)
+		1.日期與時間的格式化
+			<fmt:formateDate value="${JavaBean名稱}" dateStyle="詳細程度" type="日期|時間|兩者" pattern="可自訂格式">
+			<fmt:timeZone value="GMT+X:XX">若要指定全域時區可以用<fmt:setTimeZone>
+			
+04.XML標籤庫(XPath/XSLT)(Page.7-30)
+	需要透過.xsl模板轉換的.xml可以在.xml中加上:
+	<?xml-stylesheet type="text/xsl" href="作為模板的文件.xsl">
+	在使用這項功能前要先引入XML標籤庫並且對XML進行剖析
+	<%@taglib prefix="x" uri="http://java.sun.com/jsp/jstl/xml"%>
+	<c:import var="xml" uri="bookmarks.xml" charEncoding="UTF-8"/>
+	<x:parse var="books" doc="${xml}"/>
+	使用parse進行剖析，var屬性指定了剖析結果要儲存的屬性名稱
+	也可以在parse本體直接放置XML做剖析
+	完成剖析後若要取得XML中的某些資訊並輸出可以使用
+	<x:out select="$pageScope:books(以$開頭可指定範圍)//bookmark[2]/title">標籤(使用XPath指定位置)
+	
+	
+05.函示標籤庫(Page.7-36)	
+	
 --------------------------------------------------------------------------------------------
 CHAPTER08.自訂標籤
 
@@ -1154,6 +1244,47 @@ CHAPTER11.Java Mail入門
 
 01.要使用JavaMail傳送郵件首先必須建立代表當次郵件會話的javax.mail.Session，
 	Session包括了SMTP郵件伺服器位址、連接埠、使用者名稱、密碼等資訊
+	
+02.寄送JavaMail的大致流程	
+	
+	1.連接SMTP的基本資訊設為Servlet初始參數(host,port,username,pwd)
+		->後續要在Servlet中把這些參數以及存放Session建立必要資訊的Properties物件設為全域變數儲存
+
+	2.在Servlet Init()設定建立Session的必要屬性，建立一個Properties物件放到裡面
+
+	3.收到POST request後 取得寄件者(from)、收件者(to)、主旨(subject)、信件內容(text)的請求參數並存到括號中變數名稱裡
+
+	4.建立寄信的Message物件
+		可以把建立流程集中到一個方法中(EX.createMsg(from,to,subject,text傳入當引數))，主要在做的事情如下:
+
+		(1)建立Session物件:
+			使用剛剛存有session建立必要屬性的Properties物件當第一個引數傳入，
+			第二個引數則是呼叫new Authenticator()建構子，
+			並呼叫當中的getPasswordAuthentication()方法 return 一個PasswordAuthentication(username,pwd)物件，
+			此物件中包含稍早設為全域變數的username跟pwd
+
+		(2)建立Message物件:
+			(2-1)呼叫Message msg=new MimeMessage(session); <-剛剛建立的Session物件
+			(2-2)建立Message物件剩餘信件內容部分
+				寄件者	:msg.setFrom(new InternetAddress(from));
+				收件者	:msg.setRecipient(Message.RecipientType.TO , new InternetAddress(to));
+				主旨	:msg.setSubject(subject);
+				信件內容:msg.setText(text);
+				寄件日期:msg.setSentDate(new Date());
+	
+		完成後讓createMsg(String from,to,subject,text)方法 return設定好的Message物件，
+		執行Transport.send(msg) <-剛設定好的Message物件，就寄出了
+		
+03.郵件若要包括HTML或附加檔案等多重內容，必須使用Multipart物件，
+	並在此物件增加代表多重內容的MimeBodyPart物件，以包括HTML內容為例：
+		
+		MimeBodyPart htmlPart = new MimeBodyPart();
+		htmlPart.setContent(text,"text/html;charset=UTF-8");
+		Multipart multiPart = new MimeMultipart();
+		multiPart.addBodyPart(htmlPart);
+		
+		//取代上面原本的msg.setText(text);
+		msg.setContent(multiPart);
 	
 --------------------------------------------------------------------------------------------
 CHAPTER12.Spring框架概論

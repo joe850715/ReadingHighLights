@@ -240,4 +240,4 @@ CHAPTER07.資料型別與轉換
 	(1)charAt()用於取得字串中位於特定索引的字符
 	(2)indexOf()取得一個字串引數並回傳該引述在字串中首次出現第一個字母的索引值，也可以指定由第幾個索引開始查找
 	(3)split()用指定的分割符號將字串分割並以陣列回傳
-	另外還有:toLower/UpperCase,slice,lastIndexOf,replace,match,concat,substring,trim,.....	
+	另外還有:toLower/UpperCase,slice,lastIndexOf,replace,match,concat,substring,trim,.....很多	
