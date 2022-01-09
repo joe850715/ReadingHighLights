@@ -9,7 +9,7 @@ CHAPTER01.簡介WEB應用程式
 	(3)URI(Uniform Resource Identifier):最晚出現，URL與URN成為了URI的子集
 	範例參照Page. 1-5
 	
-02.何為HTTP
+02.何為HTTP(HyperText Transfer Protocol)
 	HTTP作為一種通訊協定，定義了兩台電腦間的溝通方式，也就是Client與Server端連線、交換資訊的確認步驟
 	有兩個基本的重要特性：
 		(1)基於請求與回應(Request/Response)
@@ -85,7 +85,7 @@ CHAPTER01.簡介WEB應用程式
 	HTTP那些文字性的通訊協定，就是透過容器居中進行剖析與轉換成Java物件。
 	只要JSP/Servlet撰寫時符合WEB容器標準規範，就可以在任何廠商時做的WEB容器上運行，
 	不用管底層真正的HTTP伺服器為何(參考書籍Page 1-19)
-	如同JVM介於Java程式與實體作業系統之間，WEB容器介於實體HTTP Server與Server之間
+	如同JVM介於Java程式與實體作業系統之間，WEB容器介於HTTP Server與Servlet之間
 	
 09.	
 	瀏覽器<------>實體伺服器<--->HTTP伺服器程式<--->WEB容器<--->Servlet
