@@ -860,7 +860,7 @@ CHAPTER06.使用JSP
 --------------------------------------------------------------------------------------------
 CHAPTER07.使用JSTL
 
-01.JSTL是另一種標準規範，並非在JSP規範當中
+01.JSTL是另一種標準規範，並非在JSP規範當中，常用有以下四種標籤庫，不過還是以"核心標籤庫/I18相容性標籤庫" 最常用
 
 02.核心標籤庫:
 	流程處理標籤，常用有:
@@ -1004,7 +1004,7 @@ CHAPTER08.自訂標籤
 	
 04.Tag自訂標籤
 	透過Tag介面相關的類別來實作標籤，可以繼承javax.servlet.jsp.tagext.TagSupport實作標籤處理器
-	繼承TagSuppot的類別中會覆寫doStartTag()方法，當JSP開始處理標籤時，會呼叫此方法並根據回傳直決定是否執行本體內容
+	繼承TagSuppot的類別中會覆寫doStartTag()方法，當JSP開始處理標籤時，會呼叫此方法並根據回傳值決定是否執行本體內容
 	(1)回傳EVAL_BODY_INCLUDE	:執行本體內容
 	(2)回傳SKIP_BODY			:不執行本體內容
 	
@@ -1170,9 +1170,10 @@ CHAPTER09.整合資料庫
 	在使用這兩個物件時需要注意SSQL的資型態與Java資料型態的對應
 	
 14.JNDI
-	將伺服器設置的從程式碼獨立出來，比如username,password,uri,資料庫實體位址,port,名稱...等，
-	將這些東西設定好，將web.xml & context.xml的<Resource/>定義好之後，
-	開發者唯一需要知道的就只剩下JNDI名稱，只需透過JNDI名稱找到DataSource並取得connection物件
+	將伺服器的設置從程式碼獨立出來，比如username,password,uri,資料庫實體位址,port,名稱...等，
+	將這些東西設定好，將web.xml & context.xml(Tomcat底下的檔案)的<Resource/>定義好之後，
+	開發者唯一需要知道的就只剩下JNDI"名稱"，只需透過JNDI名稱找到DataSource並取得connection物件
+	修改的部分只需要修改DataSource即可
 	
 15.ResultSet物件(Page.9-28)	
 	(1)
@@ -1245,7 +1246,7 @@ CHAPTER11.Java Mail入門
 01.要使用JavaMail傳送郵件首先必須建立代表當次郵件會話的javax.mail.Session，
 	Session包括了SMTP郵件伺服器位址、連接埠、使用者名稱、密碼等資訊
 	
-02.寄送JavaMail的大致流程	
+02.寄送JavaMail的基本流程	
 	
 	1.連接SMTP的基本資訊設為Servlet初始參數(host,port,username,pwd)
 		->後續要在Servlet中把這些參數以及存放Session建立必要資訊的Properties物件設為全域變數儲存
@@ -1276,7 +1277,7 @@ CHAPTER11.Java Mail入門
 		執行Transport.send(msg) <-剛設定好的Message物件，就寄出了
 		
 03.郵件若要包括HTML或附加檔案等多重內容，必須使用Multipart物件，
-	並在此物件增加代表多重內容的MimeBodyPart物件，以包括HTML內容為例：
+	並在此物件增加代表多重內容的MimeBodyPart物件，以包括進HTML內容為例：
 		
 		MimeBodyPart htmlPart = new MimeBodyPart();
 		htmlPart.setContent(text,"text/html;charset=UTF-8");
@@ -1287,11 +1288,15 @@ CHAPTER11.Java Mail入門
 		msg.setContent(multiPart);
 	
 --------------------------------------------------------------------------------------------
-CHAPTER12.Spring框架概論
+CHAPTER12~14.Spring/Spring Boot框架概論
 
-01.Spring的核心功能
-	(1)依賴注入(Dependency Injection)
+01.Spring的核心功能：
+
+	書本CH12-14寫的有點刁鑽，同時又因為這三章的篇幅都很短所以內容有些零碎，
+	建議GOOGLE這幾個KeyWord之後再回頭看書中範例會更清楚
+
+	(1)依賴注入(Dependency Injection,DI)
 	
-	(2)控制反轉(Inversion of Controll)	
+	(2)控制反轉(Inversion of Controll,IoC)	
 	
 	(3)AOP(Aspect-Oriented Programming)

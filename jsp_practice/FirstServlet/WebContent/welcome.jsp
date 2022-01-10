@@ -8,11 +8,14 @@
 </head>
 <body>
 	<div>
-		<h1>目前線上人數:  ${requestScope.num} 人</h1>
-		<h1>歡迎：${requestScope.username}登入</h1>
+		<h1>目前線上人數:  ${num} 人</h1>
+		<h1>歡迎：${username}登入</h1>
 		
 		<h4>LoginInfo:</h4>
-		<h4>${requestScope.loginInfo}</h4>
+		<h4>${loginInfo}</h4>
+		
+		<h4>Message:</h4>
+		<h4>${msg}</h4>
 
 	</div>
 	

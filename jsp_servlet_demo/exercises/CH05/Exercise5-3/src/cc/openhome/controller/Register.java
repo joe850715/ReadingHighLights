@@ -2,6 +2,7 @@ package cc.openhome.controller;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
@@ -21,7 +22,9 @@ import cc.openhome.model.UserService;
 	    }
 	)
 public class Register extends HttpServlet {
-    private String SUCCESS_PATH;
+	private static final long serialVersionUID = 1L;
+	
+	private String SUCCESS_PATH;
     private String ERROR_PATH;
     private UserService userService;
     
@@ -29,8 +32,11 @@ public class Register extends HttpServlet {
 	public void init() throws ServletException {
     	SUCCESS_PATH = getInitParameter("SUCCESS_PATH");
     	ERROR_PATH = getInitParameter("ERROR_PATH");
+    	//嘗試呼叫，如果沒有就建立一個userService
     	userService =
                 (UserService) getServletContext().getAttribute("userService");
+    	userService.showUSERS();
+    	System.out.println("Already show USERS!");
 	}
 
 	private final Pattern emailRegex = Pattern.compile(
@@ -43,12 +49,12 @@ public class Register extends HttpServlet {
     protected void doPost(
             HttpServletRequest request, HttpServletResponse response)
                  throws ServletException, IOException {
-        var email = request.getParameter("email");
-        var username = request.getParameter("username");
-        var password = request.getParameter("password");
-        var password2 = request.getParameter("password2");
+        String email = request.getParameter("email");
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+        String password2 = request.getParameter("password2");
 
-        var errors = new ArrayList<String>(); 
+        List<String> errors = new ArrayList<String>(); 
         if (!validateEmail(email)) {
             errors.add("未填寫郵件或格式不正確");
         }

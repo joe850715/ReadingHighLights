@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @WebFilter(
+	//送到以下指定URI以前都會被此過濾器攔截
     urlPatterns = {
         "/member", "/member.view", 
         "/new_message", "/del_message", 

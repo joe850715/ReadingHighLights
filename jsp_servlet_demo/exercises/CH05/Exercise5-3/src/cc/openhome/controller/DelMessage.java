@@ -36,7 +36,7 @@ public class DelMessage extends HttpServlet {
     protected void doPost(
             HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-        var millis = request.getParameter("millis");
+        String millis = request.getParameter("millis");
         if(millis != null) {
             userService.deleteMessage(getUsername(request), millis);
         }

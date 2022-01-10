@@ -7,9 +7,7 @@ import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.Filter;
 import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -25,16 +23,17 @@ import javax.servlet.http.HttpServletRequest;
                 @WebInitParam(name = "CODE_LIST", value = "/WEB-INF/codelist.txt")
         })
 public class EscapeFilter extends HttpFilter {
-    private Map<String, String> escapeMap;
+	private static final long serialVersionUID = 1L;
+	private Map<String, String> escapeMap;
 
     public void init() throws ServletException {
-        var codeList = getInitParameter("CODE_LIST");
-        try(var reader = new BufferedReader(
+        String codeList = getInitParameter("CODE_LIST");
+        try(BufferedReader reader = new BufferedReader(
                 new InputStreamReader(getServletContext().getResourceAsStream(codeList)))) {
             String input = null;
             escapeMap = new HashMap<>();
             while((input = reader.readLine()) != null) {
-                var tokens = input.split("\t");
+                String[] tokens = input.split("\t");
                 escapeMap.put(tokens[0], tokens[1]);
             }
         } catch (IOException e) {
@@ -46,7 +45,7 @@ public class EscapeFilter extends HttpFilter {
 	                     ServletResponse response, 
 	                     FilterChain chain) 
 	                          throws IOException, ServletException {
-		var requestWrapper = new EscapeWrapper((HttpServletRequest) request, escapeMap);
+		EscapeWrapper requestWrapper = new EscapeWrapper((HttpServletRequest) request, escapeMap);
         chain.doFilter(requestWrapper, response);
 	}
 }

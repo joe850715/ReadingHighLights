@@ -33,7 +33,7 @@ public class NewMessage extends HttpServlet {
             HttpServletRequest request, HttpServletResponse response) 
                             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
-        var blabla = request.getParameter("blabla");
+        String blabla = request.getParameter("blabla");
         
         if(blabla == null || blabla.length() == 0) {
             response.sendRedirect(MEMBER_PATH);

@@ -1,6 +1,9 @@
 package cc.openhome.model;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -17,9 +20,13 @@ public class UserService {
     public UserService(String USERS) {
         this.USERS = USERS;
     }
+    
+    public void showUSERS() {
+    	System.out.println("USERS="+USERS);
+    }
 
     public void tryCreateUser(String email, String username, String password) throws IOException {
-        var userhome = Paths.get(USERS, username);
+        Path userhome = Paths.get(USERS, username);
         if (Files.notExists(userhome)) {
             createUser(userhome, email, password);
         }
@@ -28,37 +35,37 @@ public class UserService {
     private void createUser(Path userhome, String email, String password) throws IOException {
         Files.createDirectories(userhome);
 
-        var salt = ThreadLocalRandom.current().nextInt();
-        var encrypt = String.valueOf(salt + password.hashCode());
+        int salt = ThreadLocalRandom.current().nextInt();
+        String encrypt = String.valueOf(salt + password.hashCode());
 
-        var profile = userhome.resolve("profile");
-        try (var writer = Files.newBufferedWriter(profile)) {
+        Path profile = userhome.resolve("profile");
+        try (BufferedWriter writer = Files.newBufferedWriter(profile)) {
             writer.write(String.format("%s\t%s\t%d", email, encrypt, salt));
         }
     }
 
     public boolean login(String username, String password) throws IOException {
-		var userhome = Paths.get(USERS, username);
+		Path userhome = Paths.get(USERS, username);
 		return Files.exists(userhome) && isCorrectPassword(password, userhome);
     }
 
     private boolean isCorrectPassword(String password, Path userhome) throws IOException {
-        var profile = userhome.resolve("profile");
-        try (var reader = Files.newBufferedReader(profile)) {
-            var data = reader.readLine().split("\t");
-            var encrypt = Integer.parseInt(data[1]);
-            var salt = Integer.parseInt(data[2]);
+        Path profile = userhome.resolve("profile");
+        try (BufferedReader reader = Files.newBufferedReader(profile)) {
+            String[] data = reader.readLine().split("\t");
+            int encrypt = Integer.parseInt(data[1]);
+            int salt = Integer.parseInt(data[2]);
             return password.hashCode() + salt == encrypt;
         }
     }
 
     public Map<Long, String> messages(String username) throws IOException {
-        var userhome = Paths.get(USERS, username);
-        var messages = new TreeMap<Long, String>(Comparator.reverseOrder());
-        try (var txts = Files.newDirectoryStream(userhome, "*.txt")) {
-            for (var txt : txts) {
-                var millis = txt.getFileName().toString().replace(".txt", "");
-                var blabla = Files.readAllLines(txt).stream().collect(Collectors.joining(System.lineSeparator()));
+        Path userhome = Paths.get(USERS, username);
+        TreeMap<Long, String> messages = new TreeMap<Long, String>(Comparator.reverseOrder());
+        try (DirectoryStream<Path> txts = Files.newDirectoryStream(userhome, "*.txt")) {
+            for (Path txt : txts) {
+                String millis = txt.getFileName().toString().replace(".txt", "");
+                String blabla = Files.readAllLines(txt).stream().collect(Collectors.joining(System.lineSeparator()));
                 messages.put(Long.parseLong(millis), blabla);
             }
         }
@@ -66,14 +73,14 @@ public class UserService {
     }
 
     public void addMessage(String username, String blabla) throws IOException {
-        var txt = Paths.get(USERS, username, String.format("%s.txt", Instant.now().toEpochMilli()));
-        try (var writer = Files.newBufferedWriter(txt)) {
+        Path txt = Paths.get(USERS, username, String.format("%s.txt", Instant.now().toEpochMilli()));
+        try (BufferedWriter writer = Files.newBufferedWriter(txt)) {
             writer.write(blabla);
         }
     }
 
     public void deleteMessage(String username, String millis) throws IOException {
-        var txt = Paths.get(USERS, username, String.format("%s.txt", millis));
+        Path txt = Paths.get(USERS, username, String.format("%s.txt", millis));
         Files.delete(txt);
     }
 }

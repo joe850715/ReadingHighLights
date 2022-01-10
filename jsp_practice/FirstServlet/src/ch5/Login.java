@@ -23,16 +23,13 @@ public class Login extends HttpServlet {
         put("test", "3333");
     }};
 
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		response.sendRedirect("Ch5Login.jsp");
-	}
-
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html;charset=UTF-8");
 		
 		String username = request.getParameter("username");
 		String password = request.getParameter("password");
 		PrintWriter out = response.getWriter();
+		HttpSession session = request.getSession();
 		
 		if(users.containsKey(username)&&users.get(username).equals(password)) {
 			User temp;
@@ -43,11 +40,13 @@ public class Login extends HttpServlet {
 			Map<String,HttpSession> sessions = UserOnline.sessions;
 			Integer num = sessions.size();
 			
-			request.setAttribute("num", num);
-			request.setAttribute("username", username);
-			request.setAttribute("loginInfo", temp.toString());
-
+			session.setAttribute("num", num);
+			session.setAttribute("loginInfo", temp.toString());
+			session.setAttribute("username", temp.name);
+			session.setAttribute("msg", temp.data);
+			
 			response.sendRedirect("welcome.jsp");
+			 
 		}else {
 			out.print("<h3>登入失敗!帳號或密碼錯誤!</h3>");
 			out.print("<a href='Ch5Login.jsp'><h3>返回登入頁</h3></a>");
