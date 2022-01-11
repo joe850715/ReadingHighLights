@@ -1,17 +1,35 @@
 package cc.openhome;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.Date;
+import java.util.Properties;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.servlet.*;
-import javax.servlet.annotation.*;
-import javax.servlet.http.*;
-import javax.servlet.http.Part;
 import javax.activation.DataHandler;
-import javax.mail.*;
-import javax.mail.internet.*;
+import javax.mail.Authenticator;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import javax.mail.internet.MimeUtility;
 import javax.mail.util.ByteArrayDataSource;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
+import javax.servlet.annotation.WebInitParam;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 
 @MultipartConfig
 @WebServlet(
@@ -19,12 +37,15 @@ import javax.mail.util.ByteArrayDataSource;
     initParams={
         @WebInitParam(name = "host", value = "smtp.gmail.com"),
         @WebInitParam(name = "port", value = "587"),
-        @WebInitParam(name = "username", value = "yourname@gmail.com"),
-        @WebInitParam(name = "password", value = "yourpassword")
+        @WebInitParam(name = "username", value = "ccxx2806449@gmail.com"),
+        @WebInitParam(name = "password", value = "cool1327")
     }
 )
 public class Mail extends HttpServlet {
-    private final Pattern fileNameRegex =
+
+	private static final long serialVersionUID = 1L;
+
+	private final Pattern fileNameRegex =
             Pattern.compile("filename=\"(.*)\"");    
     
     private final String html = 
@@ -66,14 +87,14 @@ public class Mail extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         response.setContentType("text/html;charset=UTF-8");
 
-        var from = request.getParameter("from");
-        var to = request.getParameter("to");
-        var subject = request.getParameter("subject");
-        var text = request.getParameter("text");
-        var part = request.getPart("image");
+        String from = request.getParameter("from");
+        String to = request.getParameter("to");
+        String subject = request.getParameter("subject");
+        String text = request.getParameter("text");
+        Part part = request.getPart("image");
 
         try {
-            var message = createMessage(from, to, subject, text, part);
+            Message message = createMessage(from, to, subject, text, part);
             Transport.send(message);
             response.getWriter().println("郵件傳送成功");
         } catch (Exception e) {
@@ -84,12 +105,12 @@ public class Mail extends HttpServlet {
     private Message createMessage(String from, String to, String subject, String text, Part part)
             throws MessagingException, AddressException, IOException {
 
-        var session = Session.getInstance(props, new Authenticator() {
+        Session session = Session.getInstance(props, new Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(username, password);
             }
         });
-        var message = new MimeMessage(session);
+        MimeMessage message = new MimeMessage(session);
         message.setFrom(new InternetAddress(from));
         message.setRecipient(Message.RecipientType.TO, new InternetAddress(to));
         message.setSubject(subject);
@@ -101,12 +122,12 @@ public class Mail extends HttpServlet {
 
     private Multipart multiPart(String text, Part part)
             throws MessagingException, UnsupportedEncodingException, IOException {
-        var filename = getSubmittedFileName(part);
+        String filename = getSubmittedFileName(part);
         
-        var htmlPart = new MimeBodyPart();
+        MimeBodyPart htmlPart = new MimeBodyPart();
         htmlPart.setContent(html.replace("#filename", filename).replace("#text", text), "text/html;charset=UTF-8");
 
-        var filePart = new MimeBodyPart();
+        MimeBodyPart filePart = new MimeBodyPart();
         filePart.setFileName(MimeUtility.encodeText(filename, "UTF-8", "B"));
         filePart.setHeader("Content-ID", "<" + filename + ">");        
         filePart.setDataHandler(
@@ -115,18 +136,18 @@ public class Mail extends HttpServlet {
                 )
             );
         
-        var multiPart = new MimeMultipart();
+        MimeMultipart multiPart = new MimeMultipart();
         multiPart.addBodyPart(htmlPart);
         multiPart.addBodyPart(filePart);
         return multiPart;
     }
 
     private String getSubmittedFileName(Part part) {
-        var header = part.getHeader("Content-Disposition");
-        var matcher = fileNameRegex.matcher(header);
+        String header = part.getHeader("Content-Disposition");
+        Matcher matcher = fileNameRegex.matcher(header);
         matcher.find();
 
-        var filename = matcher.group(1);
+        String filename = matcher.group(1);
         if (filename.contains("\\")) {
             return filename.substring(filename.lastIndexOf("\\") + 1);
         }

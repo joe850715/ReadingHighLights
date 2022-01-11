@@ -16,6 +16,17 @@
   limitations under the License.
 --><!-- The contents of this file will be loaded for each web application --><Context>
 
+	<Resource name="jndi/myJNDI"
+			auth="Container"
+			type="javax.sql.DataSource"
+			driverClassName="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+			url="jdbc:sqlserver://localhost:1433;databaseName=test123"
+			username="sa"
+			password="team4"
+			maxActive="20"
+			maxIdle="10"
+			maxWait="86400"/>
+
     <!-- Default set of monitored resources. If one of these changes, the    -->
     <!-- web application will be reloaded.                                   -->
     <WatchedResource>WEB-INF/web.xml</WatchedResource>

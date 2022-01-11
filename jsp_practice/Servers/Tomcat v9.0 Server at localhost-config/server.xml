@@ -153,7 +153,7 @@
              Note: The pattern used is equivalent to using pattern="common" -->
         <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs" pattern="%h %l %u %t &quot;%r&quot; %s %b" prefix="localhost_access_log" suffix=".txt"/>
 
-      <Context docBase="FirstServlet" path="/FirstServlet" reloadable="true" source="org.eclipse.jst.jee.server:FirstServlet"/><Context docBase="Exercise5-3" path="/Exercise5-3" reloadable="true" source="org.eclipse.jst.jee.server:Exercise5-3"/><Context docBase="Exercise7-1" path="/Exercise7-1" reloadable="true" source="org.eclipse.jst.jee.server:Exercise7-1"/><Context docBase="Exercise8-1" path="/Exercise8-1" reloadable="true" source="org.eclipse.jst.jee.server:Exercise8-1"/></Host>
+      <Context docBase="FirstServlet" path="/FirstServlet" reloadable="true" source="org.eclipse.jst.jee.server:FirstServlet"/><Context docBase="Exercise5-3" path="/Exercise5-3" reloadable="true" source="org.eclipse.jst.jee.server:Exercise5-3"/><Context docBase="Exercise7-1" path="/Exercise7-1" reloadable="true" source="org.eclipse.jst.jee.server:Exercise7-1"/><Context docBase="Exercise8-1" path="/Exercise8-1" reloadable="true" source="org.eclipse.jst.jee.server:Exercise8-1"/><Context docBase="JDBC_practice" path="/JDBC_practice" reloadable="true" source="org.eclipse.jst.jee.server:JDBC_practice"/><Context docBase="Exercise11-1" path="/Exercise11-1" reloadable="true" source="org.eclipse.jst.jee.server:Exercise11-1"/><Context docBase="SpringMVC" path="/mvc" reloadable="true" source="org.eclipse.jst.jee.server:SpringMVC"/></Host>
     </Engine>
   </Service>
 </Server>

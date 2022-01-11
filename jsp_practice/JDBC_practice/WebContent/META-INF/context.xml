@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Context>
+<Resource name="jdbc/myJNDI"
+			auth="Container"
+			type="javax.sql.DataSource"
+			driverClassName="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+			url="jdbc:sqlserver://localhost:1433;databaseName=test123"
+			username="sa"
+			password="team4"
+			maxActive="20"
+			maxIdle="10"
+			maxWait="86400"/>
+
+</Context>
