@@ -9,18 +9,8 @@
 
 5. Study Java SE & EE				
 
-6. 
+6. API Document
 
-
----Extra Learning
-
-1.DataBase
-	(1)What is Codd's normal forms? How can it eliminate duplication of data?
-	
-2.Security
-	(1)Injection Attack		V
-	(2)XSS Attack				
-	
 		
 ---Progress Planning
 
@@ -39,4 +29,16 @@
 	-2022/01/05	CH1-CH3
 	-2022/01/06	CH4-CH5
 	-2022/01/07	CH6-CH7
+
+
+
+---Extra Learning
+
+1.DataBase
+	(1)What is Codd's normal forms? How can it eliminate duplication of data?
+	
+2.Security
+	(1)Injection Attack		V
+	(2)XSS Attack				
+	
 	

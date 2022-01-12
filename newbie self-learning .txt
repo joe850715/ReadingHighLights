@@ -1,0 +1,71 @@
+
+---DATABASE---
+
+1.SQL 指令
+	-包含 (但不限於)  insert, select, update , delete  .... 
+	-View 的概念 與 create/modify/alter
+	-Stored procedure 的概念 
+2.SQL Management 的使用 
+3.Backup/Restore Database
+4.Schema 的設計
+	-支援的欄位類型 
+	-表格的正規化
+		-1-1 , 1-N
+5.Index 的概念
+	-What is  the index  ? the purpose ?
+	-Index 的類型:  cluster index , non cluster index 
+6.Constraint 的概念
+	-unique constraint
+	-primary key
+	-foreign key  
+7.SQL Injection
+	-What is that ?
+	-會造成甚麼問題 ?
+	-如何避免該問題 ?
+8.Performance Tuning skill
+	-那些是好的 SQL 類型 , 哪些是不好的SQL 類型 ?
+	-如何調整 ?
+9.Performance Tuning 工具
+	-Profiler 
+	-DMV View
+10.Oracle
+	-SQL Developer Tool
+ 
+ ---INFRASTRUCTURE---
+ 
+1.Hyper-V
+	-How to create a new VM
+	-Start/Stop a VM
+2.IIS
+
+---CODING SKILL IMPROVEMENT---
+
+1.Clean Code
+2.Design Pattern 
+3.Refactoring
+4.Agile Software Development
+5.JUnit 
+6.Spring
+7.Maven , Ant 
+
+
+---OTHERS---
+
+1.資料庫學習方向建議
+https://ithelp.ithome.com.tw/questions/10188164
+ 
+2.SQL SERVER無敵手冊
+https://ithelp.ithome.com.tw/users/20002493/ironman/69
+
+3.ORACLE AND MSSQL
+https://ithelp.ithome.com.tw/users/20022417/ironman/79
+
+4.索引(Index)
+	-叢集與非叢集索引
+		http://vito-note.blogspot.com/2013/05/blog-post_5510.html
+	-SQL Server Index 架構
+		https://jackyshih.pixnet.net/blog/post/5839238
+		
+5.Server健康情況(公司WIKI)
+	-如何查詢資料庫內的空間使用情形 (MS-SQL)
+	-如何查詢系統正在執行的 SQL 指令 (MS-SQL)	
