@@ -7,7 +7,7 @@
 	
 	(1)資料存儲 - 為一HashMap類 --> 常用方法 : get (key) / put (K-V pair)
 
-	(2)執行SQL指令 - CRUD -->常用方法 : query / update
+	(2)執行SQL指令 - CRUD -->常用方法 : INSERT/DELETE/UPDATE/SELECT 
 
 2.RecordArray
 

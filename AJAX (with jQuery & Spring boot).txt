@@ -24,23 +24,23 @@
 		
 	參數名稱	型別		預設值					說明
 	
-	type		String		GET						請求方式 使用POST/GET
-	url			String		目前URL					指定要進行呼叫的位址
+	type		String		GET					請求方式 使用POST/GET
+	url		String		目前URL					指定要進行呼叫的位址
 	
-	datatype	String		自動判斷(xml or html)	預期 Server 傳回的資料類型，如果沒指定，
-													jQuery 會根據 HTTP MIME Type 自動選擇
-													以 responseXML 或 responseText 傳入你的 success callback
+	datatype	String		自動判斷(xml or html)			預期 Server 傳回的資料類型，如果沒指定，
+										jQuery 會根據 HTTP MIME Type 自動選擇
+										以 responseXML 或 responseText 傳入你的 success callback
 													
-	contentType	String		application/x-www-		傳送資料至 Server 的編碼類型
-							form-urlencoded			可指定為 application/json或 html/text等等			
+	contentType	String		application/x-www-			傳送資料至 Server 的編碼類型
+					form-urlencoded				可指定為 application/json或 html/text等等			
 
-	data		Object,		-						要一起傳送到Server的資料，會自動轉成query String形式
-				String,								如果是 GET 請求還會幫你附加到 URL。
-				Array								可用 processData 選項禁止此自動轉換。物件型式則為K-V pairs
+	data		Object,		-					要一起傳送到Server的資料，會自動轉成query String形式
+			String,							如果是 GET 請求還會幫你附加到 URL。
+			Array							可用 processData 選項禁止此自動轉換。物件型式則為K-V pairs
 			
-	success		Function	-						請求成功時執行函式
+	success		Function	-					請求成功時執行函式
 	
-	error		Function	-						請求失敗時執行函式
+	error		Function	-					請求失敗時執行函式
 	
 	
 05.範例：
@@ -49,20 +49,20 @@
 //jQuery Part 
 //目的:使用按鈕選取一筆寵物資料並顯示在彈出式表單(Modal)當中
 function select(obj) {									<--傳入觸發了此select()方法的物件到此方法中，協助後續取值用
-	$("#modalForm").attr("action", "/Backstage/pet/updateone.controller");	<--變更彈出表單中的按鈕action路徑，用來實現一張表單多種用圖，與本範例比較無關無須理會
-	$("#modalForm #idSection").removeAttr("hidden");	<--根據表單用途不同變更"是否可見"的屬性，與本範例比較無關無須理會
-	ID = $(obj).parent("td").siblings(".ID").text();	<--$(obj)表示前面被傳入方法中的頁面物件"本人"，透過父母&兄弟選擇器在DOM中取得我們需求位置的資料(寵物ID)，後續作為ajax請求參數
+	$("#modalForm").attr("action", "/Backstage/pet/updateone.controller");		<--變更彈出表單中的按鈕action路徑，用來實現一張表單多種用途，與本範例較無關無須理會
+	$("#modalForm #idSection").removeAttr("hidden");				<--根據表單用途不同變更"是否可見"的屬性，與本範例較無關無須理會
+	ID = $(obj).parent("td").siblings(".ID").text();				<--$(obj)表示前面被傳入select()方法中的頁面物件"本人"，透過父母&兄弟選擇器在DOM中取得我們需求位置的資料(寵物ID)，後續作為ajax請求參數
 	console.log(ID);
-	$.ajax({											<--ajax的內容需要放在這組大括號內
+	$.ajax({									<--ajax的內容需要放在這組大括號內
 		type: "GET",
 		url: "/Backstage/pet/selectbyid.controller",	<--目標Controller url
-		datatype: "JSON",								<--預期Server回傳JSON形式的資料因此後續Controller會用到JSON轉換
+		datatype: "JSON",							<--預期Server回傳JSON形式的資料因此後續Controller會用到JSON轉換
 		contentType: "application/json",
-		data: { "id": `${ID}` },						<--以JSON形式送出Controller需求的參數
+		data: { "id": `${ID}` },						<--以JSON形式送出參數
 		success: function(result) {						<--請求成功時的callbackfunction，result是Server的回應結果(JSON形式)
 			console.log("Success");
-			var parsed = jQuery.parseJSON(result);		<--使用jQuery的JSON()將result這項JSON物件中的value(一個Pet物件)中的內容轉為JSON字串
-			$("#modalForm #petId").val(ID);				<--可以成功取值的話就可以對DOM進行修改了！修改後會直接反映在頁面上
+			var parsed = jQuery.parseJSON(result);				<--使用jQuery的JSON()將result這項JSON物件中的value(一個Pet物件)中的內容轉為JSON字串
+			$("#modalForm #petId").val(ID);					<--可以成功取值的話就可以對DOM進行修改了！修改後會直接反映在頁面上
 			$("#modalForm #petName").val(parsed.petName);
 			$("#modalForm #category").val(parsed.category);
 			$("#modalForm #species").val(parsed.species);
@@ -76,7 +76,7 @@ function select(obj) {									<--傳入觸發了此select()方法的物件到�
 			$("#modalForm #note").val(parsed.note);
 			$("#imgPreview img").attr("src",`data:image/*;base64,${parsed.pic}`);
 			//console.log(parsed.pic);
-		},												<--每個選項之間需要用逗號做分隔(只有最後一組不用)
+		},								<--每個選項之間需要用逗號做分隔(只有最後一組不用)
 		error: function() {
 			console.log("failed to get data");			<--請求失敗時執行函式，在console印出提示
 		}
@@ -91,13 +91,13 @@ function select(obj) {									<--傳入觸發了此select()方法的物件到�
 public class BackPetsController {
 
 (略)
-	@GetMapping("/selectbyid.controller")				<--此方法的Mapping
+	@GetMapping("/selectbyid.controller")					<--此方法的Mapping
 	public void processSelectById(@RequestParam int id,HttpServletResponse response) throws IOException {
 		response.setContentType("text/html;charset=utf-8");
 		
 		Pets temp = pService.selectById(id);
 		//資料轉JSON物件
-		String petStr = (JSON.toJSONString(temp, SerializerFeature.WriteMapNullValue));//確認可以印出NULL
+		String petStr = (JSON.toJSONString(temp, SerializerFeature.WriteMapNullValue));//確保可以印出NULL(正常情況JSON會忽略不印)
 		JSONObject petData = JSONObject.parseObject(petStr);
 
 		PrintWriter out = response.getWriter();
