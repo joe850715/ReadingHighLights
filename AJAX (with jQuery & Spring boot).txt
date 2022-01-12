@@ -1,0 +1,110 @@
+---AJAX SIMPLY REVIEWS (WITH JQUERY & SPRING BOOT)---
+
+01.AJAX (Asynchronous JavaScript and XML)
+	使頁面進行更新時只需更新它需要變動的部分(對DOM做修改)，不用每次都整個頁面重新載入
+
+02.使用javaScript做AJAX有點麻煩，尤其是POST請求的部分，所以直接跳到使用jQuery做AJAX
+
+03.使用jQuery進行AJAX
+	jQuery大幅簡化了AJAX的使用，除了基本的load(),get(),post(),getJSON(),getScript()方法外，
+	也允許自行定義不同的AJAX的事件，該在何種情形下被觸發，其中又分為兩種--全域事件 與 局部事件
+	
+	(1)局部事件:
+		局部事件指的是發生在$.ajax()物件當中定義到的事件(此物件的說明在下方第四點)
+		
+	(2)全域事件:
+		指的是我們可以在任何元素上綁定Ajax Global Events，
+		每當有AJAX請求時jQuery就會適時進行觸發
+	
+04.jQuery.ajax物件
+	是jQuery最底層的ajax物件，前面提到的load(),get(),post(),getJSON(),getScript()等等方法，
+	都是由$ajax()包成的簡單應用。同時需要注意$ajax()物件其實 "只有一個參數"，
+	此參數的功用是用來設定 "初始化" 以及 "處理ajax request" 的功能，並且此參數是一個"鍵值對的集合"，
+	每一個鍵值對都是用來設定功能的選項。幾個常用選項如下(有很多選項，這邊只列幾個最常用到的)：
+		
+	參數名稱	型別		預設值					說明
+	
+	type		String		GET						請求方式 使用POST/GET
+	url			String		目前URL					指定要進行呼叫的位址
+	
+	datatype	String		自動判斷(xml or html)	預期 Server 傳回的資料類型，如果沒指定，
+													jQuery 會根據 HTTP MIME Type 自動選擇
+													以 responseXML 或 responseText 傳入你的 success callback
+													
+	contentType	String		application/x-www-		傳送資料至 Server 的編碼類型
+							form-urlencoded			可指定為 application/json或 html/text等等			
+
+	data		Object,		-						要一起傳送到Server的資料，會自動轉成query String形式
+				String,								如果是 GET 請求還會幫你附加到 URL。
+				Array								可用 processData 選項禁止此自動轉換。物件型式則為K-V pairs
+			
+	success		Function	-						請求成功時執行函式
+	
+	error		Function	-						請求失敗時執行函式
+	
+	
+05.範例：
+	使用jQuery的ajax事件搭配Spring Boot專案中的Controller範例
+	
+//jQuery Part 
+//目的:使用按鈕選取一筆寵物資料並顯示在彈出式表單(Modal)當中
+function select(obj) {									<--傳入觸發了此select()方法的物件到此方法中，協助後續取值用
+	$("#modalForm").attr("action", "/Backstage/pet/updateone.controller");	<--變更彈出表單中的按鈕action路徑，用來實現一張表單多種用圖，與本範例比較無關無須理會
+	$("#modalForm #idSection").removeAttr("hidden");	<--根據表單用途不同變更"是否可見"的屬性，與本範例比較無關無須理會
+	ID = $(obj).parent("td").siblings(".ID").text();	<--$(obj)表示前面被傳入方法中的頁面物件"本人"，透過父母&兄弟選擇器在DOM中取得我們需求位置的資料(寵物ID)，後續作為ajax請求參數
+	console.log(ID);
+	$.ajax({											<--ajax的內容需要放在這組大括號內
+		type: "GET",
+		url: "/Backstage/pet/selectbyid.controller",	<--目標Controller url
+		datatype: "JSON",								<--預期Server回傳JSON形式的資料因此後續Controller會用到JSON轉換
+		contentType: "application/json",
+		data: { "id": `${ID}` },						<--以JSON形式送出Controller需求的參數
+		success: function(result) {						<--請求成功時的callbackfunction，result是Server的回應結果(JSON形式)
+			console.log("Success");
+			var parsed = jQuery.parseJSON(result);		<--使用jQuery的JSON()將result這項JSON物件中的value(一個Pet物件)中的內容轉為JSON字串
+			$("#modalForm #petId").val(ID);				<--可以成功取值的話就可以對DOM進行修改了！修改後會直接反映在頁面上
+			$("#modalForm #petName").val(parsed.petName);
+			$("#modalForm #category").val(parsed.category);
+			$("#modalForm #species").val(parsed.species);
+			$("#modalForm #sex").val(parsed.sex);
+			$("#modalForm #age").val(parsed.age);
+			$("#modalForm #fixStatus").val(parsed.fixStatus);
+			$("#modalForm #adoptStatus").val(parsed.adoptStatus);
+			$("#modalForm #cusId").val(parsed.cusId);
+			$("#modalForm #cusName").val(parsed.cusName);
+			$("#modalForm #adoptDate").val(parsed.adoptDate);
+			$("#modalForm #note").val(parsed.note);
+			$("#imgPreview img").attr("src",`data:image/*;base64,${parsed.pic}`);
+			//console.log(parsed.pic);
+		},												<--每個選項之間需要用逗號做分隔(只有最後一組不用)
+		error: function() {
+			console.log("failed to get data");			<--請求失敗時執行函式，在console印出提示
+		}
+	})
+}
+
+//Controller Part
+//選擇並查看指定的寵物資料
+@Controller
+@RequestMapping("/Backstage/pet")						<--可以針對此Controller類別定一個requestMapping方便做安全控管
+@SessionAttributes(names = {"sexSet","cateSet"})		
+public class BackPetsController {
+
+(略)
+	@GetMapping("/selectbyid.controller")				<--此方法的Mapping
+	public void processSelectById(@RequestParam int id,HttpServletResponse response) throws IOException {
+		response.setContentType("text/html;charset=utf-8");
+		
+		Pets temp = pService.selectById(id);
+		//資料轉JSON物件
+		String petStr = (JSON.toJSONString(temp, SerializerFeature.WriteMapNullValue));//確認可以印出NULL
+		JSONObject petData = JSONObject.parseObject(petStr);
+
+		PrintWriter out = response.getWriter();
+		out.print(petData);
+		out.close();
+		System.out.println("輸出完成");
+	}
+	
+(略)
+}
