@@ -55,7 +55,7 @@ function select(obj) {									<--傳入觸發了此select()方法的物件到�
 	console.log(ID);
 	$.ajax({									<--ajax的內容需要放在這組大括號內
 		type: "GET",
-		url: "/Backstage/pet/selectbyid.controller",	<--目標Controller url
+		url: "/Backstage/pet/selectbyid.controller",				<--目標Controller url
 		datatype: "JSON",							<--預期Server回傳JSON形式的資料因此後續Controller會用到JSON轉換
 		contentType: "application/json",
 		data: { "id": `${ID}` },						<--以JSON形式送出參數
