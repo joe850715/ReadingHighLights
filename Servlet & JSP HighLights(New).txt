@@ -989,6 +989,7 @@ CHAPTER08.自訂標籤
 	(1)建立.java檔繼承javax.servlet.jsp.targxt.SimpleTagSupport實作標籤處理器-->重新定義doTag()方法
 	(2)建立.tld檔 給定uri作為對應給taglib指示元素用，給定name,tag-class,body-content,attribute(Page.8-10)屬性
 	(3)使用時taglib指示元素找到對應URI的.tld再透過名稱與tag-class找到對應java檔
+	(4)XML設定中<rtexprvalue>標籤帶鰾的意義為:是否接受運算結果
 	
 	生命週期:
 		1.建立自訂標籤處理器實例

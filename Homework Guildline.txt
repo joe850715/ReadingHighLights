@@ -1,0 +1,209 @@
+
+---HOMEWORK DESCRIPTION & THINKING---
+
+01.主題: Q&A系統
+
+02.參考對象: StackOverFlow論壇
+節點,路徑,階層----X
+
+03.每人可提出問題，或回答問題
+	1.頁面內容:
+		(1)提問表單:
+			a.各欄位的說明訊息需要修改RC檔
+			b.POST form、需支援檔案(含圖片)上傳、enctype需調整(use rich text maybe?)
+		
+		(2)回答表單:
+			a.基本比照提問表單辦理
+
+04.提問者可勾選正確答案，其他觀看者可投票 
+	1.提問者可打勾 
+		(1)僅限該問題的提問者可見該選項 -> 權限判定(try to get by CurrentUser)
+			a.僅能選出一個最佳解
+			b.可以修改最佳解的人選
+			
+	2.其他使用者可投票並顯示投票統計
+		(1)User對提問以及提問下的回覆可以進行投票
+			a.紀錄User投票結果
+			b.對於一個提問或一項回覆限定投票一次
+			c.like/dislike功能:
+				- 點讚後記錄UserID與點選的Question/Answer ID,對應ID 的 Question / Answer 變更like/dislike總數
+				- 將dislike選項先disable掉, 透過js變更like按鈕點讚後的action,若再次點擊則進行取消
+				- 取消原本的評價後,恢復被disable的選項為可點擊
+			思考:
+				如何紀錄一個使用者的like/dislike?
+			目前想法:
+				Question table與Answer table兩者是相關聯的，每個AnswerID都隸屬於一個QuestionID之下
+				但是每個Question跟提問中的每一個Answer的投票紀錄卻都是分開的互不影響
+				(EX. like數只有6的普通提問裡面可能有like數>100的絕好解答)
+				
+				又，在User與Q/A間的關係是一對多，所以也會需要建立一個vote table來記錄使用者與
+				QuestionID / AnswerID之間的關聯，單一Q/A ID的總票數也可以通過count計算出來
+				
+			延伸思考:
+				vote table中需要能夠有效率地辨識這個ID是屬於Question或是Answer，
+				除非拆成兩張表(應該不用這麼麻煩)或可以迅速通過ID辨識出來(要確保Q/A ID絕不重複)，
+				需要好好研究下GenerateSerialID的方法，如果真的有重複風險可以考慮加上前後綴詞來避免
+				(不過解析字串的時候要多一動就是了...)
+					
+	
+05.每人可看到問題列表，問題列表可照某些條件排序(如標題、點閱次數、投票次數)，也可關鍵字搜尋 
+	1.問題列表條件排序:
+		a.未進行條件篩選的情況
+			整體來說提問應該使用堆疊的結構會較佳，老問題在下新問題在上
+			(create Date / ID ??)
+		b.執行篩選/其他排序
+			根據篩選條件取到資料，若有其他排序條件的話(ex.最熱門/最多瀏覽...)
+			在Service層中進行排序後交給JSP做<c:foreach>
+		c.關鍵字搜尋
+			在使用者角度來看會需要支援模糊查詢，
+			由使用者進行內容輸入會有SQL Injection風險，有過篩的需要(可以用preparedStatement解決)
+
+06.有"分類"，每個問題必須屬於一個分類 
+	1.發問者設定分類:
+		a.發文頁面須有一個必填欄位，讓發文者選填分類，發布後文章隸屬於該分類之下
+	2.分類的部分:
+		/*思考中*/
+		(1)暫時構想:
+			a.預想好一些類別，設定類別代碼，並分別建立對應文字到RC中
+			b.條件選取表單或許可以參考 "外訓公佈欄管理" 搜尋表單那樣的形式
+				->如此的話可以使用預設好的選項完成<select>/<option>下拉選單
+					就不會出現未經認可的奇怪類別
+			
+			思考:
+				是否要允許自訂類別呢?
+			目前想法:
+				因為RC的新增似乎沒有一個自動產生KEY並新增完三個語系的方法(還是其實有?)
+				就需要略過新增RC這一步，直接在收到Request時以及準備Response之前調整編碼避免亂碼
+				然後直接存到資料庫裏面(又因為讓使用者自己輸入內容，會需要過篩)
+				而且後續在完成<select>/<option>下拉選單的選項會很麻煩，
+				需要先掃過所有文章的類別放到Set裡面(篩掉重複值)再回傳
+				又或者是多一個table紀錄所有已出現的類別
+					
+				延伸思考:
+					但當一個類別中的所有文章都刪光了的話，類別需要跟著移除的嗎?
+					如果需要的話判斷點下在哪裡比較好?每次增刪文的時候做檢查?或是使用批次作業的方式?
+			
+	(Jerry小建議:分類的部分可以先想，先塞一些寫死的東西代替，最後再實作)	
+
+14.權限：在權限管理的地方新增可設管理權限 
+	roles-and-privilege.xml以及相關的.java
+
+07.管理者可隱藏不當的問題或回應
+	1.僅限擁有管理者身分者可以看到此選項 
+		a.權限判定(try to get by CurrentUser)
+		b.設置角色權限(roles-and-privilege)
+	2.如題，功能是"隱藏"，所以在並未刪除的前提下，Question與Answer table中會需要一個Column紀錄此狀態	
+		
+08.管理者可指派人來回答問題(選人UI) 
+	1.可指派多人 
+		a.此權限限定管理者才擁有
+		b.可參考專案中的選人UI，僅有選中者可以進行回答，其他User僅能瀏覽按讚
+			->需要一個Column紀錄指派條件(預設為Null),進入問題後先行判定
+				if(條件!=null){符合指派條件者才擁有回答表單}
+		
+			思考:
+				指派條件的紀錄Column應該要放在哪一個Table比較好???
+				由於可以指派多人的緣故，符合條件的人選需要是一個清單
+			目前想法:
+				->	新增在Question table：由於"提問"與"被指派者"會是一對多關係，
+					當有複數個被指派者時會導致資料筆數變得冗長且內容重複
+					除非可以儲存陣列到SQL中，但SQL並無此型別所以不可行
+				
+				->	拉一個新表，建立被指派者、使用者與提問之間的關聯，
+					以QuestionID作為PK，同時也是FK之一，參照到Question table 
+					以UserID作為另一個FK參照到Users table
+					
+09.可上傳附件
+	1.有上傳的需求的同時也要有下載功能
+		a.同樣需要是一個POST表單，若有圖片上傳的需求需要設置enctype
+		b.下載功能的實現或許可以參考課程中下載課程內容/參考資料的部分
+		c.附件儲存於DB之中:CLOB / BLOB，進與出之間需要注意編碼問題
+		
+10.新增模組設定可開啟或關閉此模組 
+	新增節點與模組，並把節點新增到該模組下，模組開啟時顯示節點 / 關閉時隱藏節點
+	(siteMap, menu-tree.csv)
+
+11.郵件通知：若某問題有人回答，該討論串中的所有人都會收到郵件通知
+	查詢QuestionID下的所有AnswerID, 抓到所有對應的UserID(包含提問者)並撰寫Mail寄送方法
+
+12.匯入excel：分類可用excel匯入的方式 
+	與第6點分類的部分可以放到最後一起思考
+	/*還沒想法 表頭、格式之類云云*/
+	
+13.匯出excel：可匯出某分類的所有問題及對應的正確答案 
+	與第6點分類的部分可以放到最後一起思考
+	/*還沒想法 表頭、格式之類云云*/
+
+
+
+15.報表：新增報表可統計每個人提問/回答/"被選為正確答案的次數"   	
+	後面再思考表頭跟格式之類的，內容部分前面如果做得出來這些計算數量應該沒問題
+	
+	思考:
+		"被選為正確答案的次數"應該要記錄在哪裡?
+	目前想法:
+		->	在Users table新增一個Column:
+			會動到table Schema，但Bean物件會需要更改，
+			導致後續使用到此Bean物件的很多方法可能出錯，先不要
+		
+		->	在Question table下設置一個允許null的Column
+			每當提問者標記最佳解或是移除最佳解的時候，在此欄位中記錄/移除最佳的AnswerID
+			透過這些AnswerID抓到他們的回應者做count。可能需要二重查詢(或許可以考慮join?)
+		
+		->	直接在Answer table增加一個Column記錄此解答是否有被選為最佳解
+			查詢的時候就可以直接count指定UserID下被選為最佳解的Answer數量
+			
+		但第二項在Question table下設置Column紀錄最佳解ID還是必要的
+		
+		
+		
+16.New Table Schema Design
+
+	1.Question Table
+		questionId	問題ID	(PK)
+		UserId		發布者ID(FK)
+		categoryId
+		title		標題
+		content		內容
+		attachment	附件
+		bestAnsId	最佳解Id(FK)
+		IsHidden	被ban狀態
+		isDelete	狀態欄位 (軟刪除)
+		
+	2.Answer Table
+		answerId	解答Id	(PK)
+		questionId	提問Id	(FK)
+		UserId		發布者Id(FK)
+		content		回應內文
+		attachment	附加檔案
+		isBest		是否為最佳解
+		IsHidden	被ban狀態
+	
+	3.Vote Table
+		ContentId	問題Id/解答Id	(PK,FK)	
+		*VoteId		純流水
+		UserId		投票者Id		(PK,FK)
+		*Type						(Q=1,A=0)
+		selected	選擇結果		(like=1,dislike=-1)
+		
+	4.category	提問類別	
+		categoryId (PK)
+		name
+		
+	5.指派(紀錄提問的被指派者)
+		QuestionId
+		UserId
+		
+			
+	說明:
+		1.大前提:
+			QuestionId & AnswerId 必須保證不會重複!!
+			因為在Vote table會需要用來判定這個Id是來自Question還是Answer
+			除非把Vote table拆成提問/解答各自一個，或者是在產生出ID之後加上前後綴詞(Q99011,A99011 etc.)
+		
+		2.vote table:
+			管理每人/每則內容按讚的情況，因為每則內容每人限定投票一次，因此嘗試使用複合主鍵
+			每則內容的得票數可以透過count出來
+
+
+*Table Column Name首字大寫
