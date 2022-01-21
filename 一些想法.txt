@@ -30,3 +30,32 @@
 		1.印出該不當內容詳細資料
 		2.編輯元件功能:解BAN按鈕
 		
+		
+-------------------------------------------------
+
+需要的Class
+
+問題列表頁面:
+	1.統合所有資訊甩給JSP渲染的ActionClass	-> 利用Question, QuestionSearch
+	2.ForumQuestion的Class (大概是Bean+dao作用) extends AutoRecordObject
+	3.ForumQuestionSearch的Class(大概是Service作用,根據篩選條件的不同去變化最終要執行的sql語句) 
+	4.FuctionType:達到一個Action Class 可以處理多種類型的Request
+		同一個Action檔可設定不同的FuctionType去對應Action Class底下不同的Method(類似Controller的概念)
+		當獲得Request，先抓到FunctionType再根據這個值執行到不同的Method
+	5.
+	
+	
+待辦:	
+	1.<td>內部換行(參考其他頁面) 
+	2.建立類別搜尋下拉選單，將問題類別生成進下拉選單
+	3.嘗試建立搜尋功能順便觀察一下運作機制
+	4.釐清page-goto-tag的機制
+	5.
+	
+	
+疑問:
+	1.OWASPUtil:看起來像是以安全為目標的型別轉換工具，使用的時機是?
+				是否所有來自客戶端的POST Request的各項參數都要過篩??
+	
+	2.
+		

@@ -6,29 +6,80 @@
 02.參考對象: StackOverFlow論壇
 
 節點與架構:
+
 	課程管理
 		QA系統
 			問題列表
 				-條件篩選表單: 
-					1.字串搜尋 2.問題類別搜尋 3.Tag搜尋 4.日期搜尋 5.已解決/未解決/全部 6.搜尋按鈕
-					7.匯出分類下的所有問題與最佳解按鈕 8.匯入分類按鈕(管理員限定)
+					1.字串搜尋 2.問題類別搜尋 3.日期區間搜尋 4.已解決/未解決/全部 5."搜尋"按鈕(送出查詢表單)
+					6.匯出搜尋結果的所有問題與最佳解按鈕 7.匯入分類按鈕(管理員限定) 8."我要提問"按鈕(彈出提問表單頁面)
+				
 				-結果顯示區域: 
 					1.一筆提問的資料:
-						顯示基本資訊:標題/提問者/提問時間/瀏覽次數/好評數/問題狀態(已解/未解)/詳細資訊按鈕
-					2.詳細資訊頁面:
-						-問題標題
-						-點讚投票元件
-						-問題內容
-						-回應
-							回應標題
-							回應內容
-							最佳解應在所有回應的最上方
+						每ROW有7column:標題/提問者/提問時間/瀏覽次數/好評數/解答數(若有最佳解變更此處bg-color)/詳細資訊按鈕
+					
+				-詳細資訊頁面:
+						
+					-問題標題
+					-點讚投票元件
+					-編輯元件(提問者:可選擇編輯/刪除自己的提問 ； 管理者:可隱藏不當提問)
+					-問題內容
+					-發布文章時間/更新文章時間
+					-提問者
+							
+					-回應區域
+					
+						最佳解應在所有回應的最上方								
+								
+							//依照createDate 或 特定排序條件排序
+							{
+								點讚投票元件
+								編輯元件(回應者:可選擇編輯/刪除自己的回應 ； 管理者:可隱藏不當提問)
+								回應內容
+								回應文章時間/更新文章時間
+								回應者
+							}
 							
 						-回應表單(根據情況判斷是否顯示 EX.限定指派者回應,已找出最佳解)
 						
-						
-				
-				
+資料表Schema
+	1.Question Table
+		QuestionId	問題ID	(PK)
+		UserId		發布者ID(FK)
+		CategoryId	問題分類
+		Title		標題
+		Content		內容
+		CreateDate	發文日期
+		ModifyDate	修改日期
+		BestId		最佳解Id(FK)
+		IsHidden	被ban狀態
+		IsDelete	刪除狀態欄位
+		
+	2.Answer Table
+		AnswerId	解答Id	(PK)
+		QuestionId	提問Id	(FK)
+		UserId		發布者Id(FK)
+		Content		回應內文
+		CreateDate	發文日期
+		ModifyDate	修改日期
+		IsBest		是否為最佳解
+		IsHidden	被ban狀態
+	
+	3.Vote Table
+		ContentId	問題Id/解答Id	(PK,FK)	
+		###VoteId		純流水###			
+		UserId		投票者Id		(PK,FK)
+		Type		問題/解答		(Q=1,A=0)
+		selected	選擇結果		(like=1,dislike=-1)
+		
+	4.category	提問類別	
+		categoryId (PK)
+		name
+		
+	5.AssignedUser(被指派回答提問)
+		QuestionId
+		UserId
+		
 
 03.每人可提出問題，或回答問題
 	1.頁面內容:
@@ -181,43 +232,7 @@
 		
 		
 		
-16.New Table Schema Design
-
-	1.Question Table
-		questionId	問題ID	(PK)
-		UserId		發布者ID(FK)
-		categoryId
-		title		標題
-		content		內容
-		attachment	附件
-		bestAnsId	最佳解Id(FK)
-		IsHidden	被ban狀態
-		isDelete	狀態欄位 (軟刪除)
-		
-	2.Answer Table
-		answerId	解答Id	(PK)
-		questionId	提問Id	(FK)
-		UserId		發布者Id(FK)
-		content		回應內文
-		attachment	附加檔案
-		isBest		是否為最佳解
-		IsHidden	被ban狀態
-	
-	3.Vote Table
-		ContentId	問題Id/解答Id	(PK,FK)	
-		*VoteId		純流水
-		UserId		投票者Id		(PK,FK)
-		*Type						(Q=1,A=0)
-		selected	選擇結果		(like=1,dislike=-1)
-		
-	4.category	提問類別	
-		categoryId (PK)
-		name
-		
-	5.指派(紀錄提問的被指派者)
-		QuestionId
-		UserId
-		
+16.New Table Schema Design		
 			
 	說明:
 		1.大前提:
@@ -231,3 +246,15 @@
 
 
 *Table Column Name首字大寫
+
+
+
+------------------------------------------------------------
+
+1.<jsp:include page="/jsp/template/message_tip.jsp">
+	加入小型紅色的提示訊息icon
+	
+2.<jsp:include page="/jsp/template/sortview.jsp">
+	用作分類/排序使用
+	
+	
