@@ -54,25 +54,28 @@
 		BestId		最佳解Id(FK)
 		IsHidden	被ban狀態
 		IsDelete	刪除狀態欄位
+		IsQuestion	標示是否為問題
 		
 	2.Answer Table
 		AnswerId	解答Id	(PK)
 		QuestionId	提問Id	(FK)
 		UserId		發布者Id(FK)
-		Content		回應內文
+		Title		回應標題
+ 		Content		回應內文
 		CreateDate	發文日期
 		ModifyDate	修改日期
 		IsBest		是否為最佳解
 		IsHidden	被ban狀態
+		IsQuestion	標示是否為問題	
+
 	
 	3.Vote Table
-		ContentId	問題Id/解答Id	(PK,FK)	
-		###VoteId		純流水###			
+		ContentId	問題Id/解答Id	(PK,FK)				
 		UserId		投票者Id		(PK,FK)
-		Type		問題/解答		(Q=1,A=0)
+		Type		問題/解答		(Q=1,A=0) 對應IsQuestion欄位
 		selected	選擇結果		(like=1,dislike=-1)
 		
-	4.category	提問類別	
+	4.category		提問類別	
 		categoryId (PK)
 		name
 		
