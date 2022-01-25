@@ -46,12 +46,14 @@
 	1.Question Table
 		QuestionId	問題ID	(PK)
 		UserId		發布者ID(FK)
-		CategoryId	問題分類
+		CategoryId	問題分類(FK)
 		Title		標題
 		Content		內容
 		CreateDate	發文日期
 		ModifyDate	修改日期
 		BestId		最佳解Id(FK)
+		Viewed		瀏覽次數
+		IsResolved	已被解決
 		IsHidden	被ban狀態
 		IsDelete	刪除狀態欄位
 		IsQuestion	標示是否為問題
@@ -64,15 +66,17 @@
  		Content		回應內文
 		CreateDate	發文日期
 		ModifyDate	修改日期
+		AttachmentURL
 		IsBest		是否為最佳解
 		IsHidden	被ban狀態
 		IsQuestion	標示是否為問題	
+		IsDelete
 
 	
 	3.Vote Table
 		ContentId	問題Id/解答Id	(PK,FK)				
 		UserId		投票者Id		(PK,FK)
-		Type		問題/解答		(Q=1,A=0) 對應IsQuestion欄位
+		IsQuestion	問題/解答		(Q=1,A=0) 對應IsQuestion欄位
 		selected	選擇結果		(like=1,dislike=-1)
 		
 	4.category		提問類別	

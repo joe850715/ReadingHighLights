@@ -57,7 +57,7 @@
 	1.OWASPUtil:看起來像是以安全為目標的型別轉換工具，使用的時機是?
 				是否所有來自客戶端的POST Request的各項參數都要過篩??
 	
-	2.
+	2.<template:UserName user="${question.userId}"/>
 	
 	
 RC_Content 可以先想
