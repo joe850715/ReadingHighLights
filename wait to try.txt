@@ -1,0 +1,133 @@
+---01.Class QAAnswers---
+
+	public class QAAnswers{
+	
+		public int getAnswerId(){
+			return getInt("AnswerId");
+		}
+		
+		public void setAnswerId(int id){
+			put("AnswerId",id);
+		}
+		
+		public int getQuestionId(){
+			return getInt("QuestionId"); 
+		}
+		
+		public void setQuestionId(int id){
+			put("questionId",id);
+		}
+		
+		public int getUserId(int id){
+			return getInt("UserId");
+		}
+		
+		public void setUserId(int id){
+			put("UserId",id);
+		}
+		
+		public String getTitle(){
+			return getString("Title");
+		}
+		
+		public void setTitle(String title){
+			put("Title",title);
+		}
+		
+		public String getContent(){
+			return getString("Content");
+		}
+		
+		public void setContent(String content){
+			put("Content",content);
+		}
+		
+		public String getCreateDate(){
+			return getString();
+		}
+		
+		public void setCreateDate(XXX createDate){
+			put("CreateDate",createDate);
+		}
+		
+		public String getModifyDate(){
+			return getString();
+		}
+		
+		public void setModifyDate(XXX modifyDate){
+			put("ModifyDate",modifyDate);
+		}
+		
+		public String getAttachmentURL(){
+			return getString("AttachmentURL");
+		}
+		
+		public String setAttachmentURL(String url){
+			put("AttachmentURL",url);
+		}
+		
+		public int getIsBest(){
+			return getInt("IsBest");
+		}
+		
+		public void setIsBest(int status){
+			put("IsBest",status);
+		}
+		
+		public int getIsHidden(){
+			return getInt("IsHidden");
+		}
+		
+		public void setIsBest(int status){
+			put("IsHidden",status);
+		}
+		public int getIsQuestion(){
+			return getInt("IsQuestion");
+		}
+		
+		public void setIsQuestion(int status){
+			put("IsQuestion",status);
+		}
+		
+		public int getIsDeleted(){
+			return getInt("IsDeleted");
+		}
+		
+		public void setIsDeleted(int status){
+			put("IsDeleted",status);
+		}	
+		
+		public int findAnswerById(){
+			
+		}
+		
+	}
+	
+	
+---02.Class QAQuestions---	
+
+(1)Count Answers by QuestionId 
+
+	public int getAnswerCount(){
+		"Select count(*) from QAAnswers where questionId=? "
+		......getQuestionId();
+	}
+	
+	
+---03.QuestionList JSP & QuestionDetail JSP & Action Class---
+
+(0)print Answered times, Viewed times in Question-List JSP
+		
+(1)print question's title,category,UserName,CreateDate,[ModifyDate],content
+
+(2)generate answer form and add New Answer -->  QuestionDetailManageAction Class (ADD_ANSWER)	
+
+(3)Viewed-times incresed as detail-button was clicked --> QuestionDetailManageAction Class (SHOW_DETAIL)
+
+(4)
+
+(5)<c:if> ModifyDate / edit-button / delete-button / answer-form / Answer-Display Area  </c:if>	
+
+(6)Generate Answers-Display area in deltail page(do the bestAnswer function also)
+	BestAnswer --> QuestionDetailManageAction Class (SET_BEST)
+	
